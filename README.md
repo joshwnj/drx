@@ -8,6 +8,10 @@ _Declarative React Experiments_
 npm install --save drx
 ```
 
+## Q. Is this ready to use in production?
+
+Nope! Things are most likely going to change.
+
 ## Q. What is this? Is it even a good idea?
 
 I'm still figuring that out :D But I'm discovering a lot of useful patterns arising from this idea of writing components (structure & logic) declaratively.
