@@ -7,8 +7,7 @@ module.exports = function renderStyles (styles, props) {
   function group (s) {
     if (typeof s === 'string' && s.indexOf(':') > 0) {
       rules.push(s)
-    }
-    else {
+    } else {
       classes.push(s)
     }
   }
@@ -17,7 +16,7 @@ module.exports = function renderStyles (styles, props) {
     if (!Array.isArray(styles)) { return group(styles) }
 
     styles.forEach(s => {
-      (typeof s === 'function') ?  groupAll(s(props)) : group(s)
+      (typeof s === 'function') ? groupAll(s(props)) : group(s)
     })
   }
 

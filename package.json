@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "standard",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +22,7 @@
     "react": ">= 0.14.0 < 17.0.0-0"
   },
   "devDependencies": {
-    "react": "^15.6.1"
+    "react": "^15.6.1",
+    "standard": "^10.0.3"
   }
 }

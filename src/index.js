@@ -44,9 +44,8 @@ function x (type, ...styles) {
     // if we get a string, consider it to be the key of a prop
     if (typeof func === 'string') {
       self.renderIf = (p) => Boolean(p[func])
-    }
-    // TODO: make sure it's a function at this point
-    else {
+    } else {
+      // TODO: make sure it's a function at this point
       self.renderIf = func
     }
 
@@ -64,19 +63,18 @@ function x (type, ...styles) {
           const val = p[func[k]]
           if (val !== undefined) {
             newProps[k] = val
+          } else if (k === 'children') {
+            // children is a special case: we only want it to pass on if it's manually opted in
+            newProps[k] = ''
           }
-          // children is a special case: we only want it to pass on if it's manually opted in
-          else if (k === 'children') { newProps[k] = '' }
         })
         return newProps
       }
-    }
-    // if we get a string, that is the key of a sub-object
-    else if (t === 'string') {
+    } else if (t === 'string') {
+      // if we get a string, that is the key of a sub-object
       self.props = (p) => p[func]
-    }
-    // TODO: make sure it's a function at this point
-    else {
+    } else {
+      // TODO: make sure it's a function at this point
       self.props = func
     }
 
@@ -87,7 +85,7 @@ function x (type, ...styles) {
     self.list = { prop, type }
     return render
   }
-  
+
   return render
 }
 
