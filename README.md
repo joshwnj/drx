@@ -22,7 +22,7 @@ Take a look at the examples below if you're keen, and let me know what you think
 
 We often write components that involve some display logic. Like a message that should only be rendered if it has children:
 
-```js
+```jsx
 import React from 'react'
 
 export default function (props) {
@@ -64,7 +64,7 @@ Here we have:
 
 Another common bit of display logic in components is translating props from a parent to a child. For example, this component receives an `imageUrl` prop which becomes the `src` of a child image element:
 
-```js
+```jsx
 import React from 'react'
 
 export default function (props) {
@@ -143,7 +143,7 @@ Sometimes you want to add some logic. Like say you want your heading to be rever
 
 We could write it like this:
 
-```js
+```jsx
 import React from 'react'
 
 export default function (props) {
