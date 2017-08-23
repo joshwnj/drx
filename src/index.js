@@ -7,7 +7,7 @@ function x (type, ...styles) {
     styles
   }
 
-  function render (props) {
+  function render (props={}) {
     if (self.renderIf) {
       if (!self.renderIf(props)) { return null }
     }

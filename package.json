@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "standard",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,12 @@
     "react": ">= 0.14.0 < 17.0.0-0"
   },
   "devDependencies": {
+    "jest": "^20.0.4",
     "react": "^15.6.1",
+    "react-test-renderer": "^15.6.1",
     "standard": "^10.0.3"
+  },
+  "dependencies": {
+    "cmz": "^3.5.1"
   }
 }
