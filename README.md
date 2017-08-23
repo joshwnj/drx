@@ -23,6 +23,8 @@ Take a look at the examples below if you're keen, and let me know what you think
 We often write components that involve some display logic. Like a message that should only be rendered if it has children:
 
 ```js
+import React from 'react'
+
 export default function (props) {
   if (!props.children) { return null }
 
@@ -63,13 +65,15 @@ Here we have:
 Another common bit of display logic in components is translating props from a parent to a child. For example, this component receives an `imageUrl` prop which becomes the `src` of a child image element:
 
 ```js
+import React from 'react'
+
 export default function (props) {
   const { children, imageUrl } = props
   
   return (
     <div className='message'>
       { imageUrl && <img src={imageUrl} className='message__image /> }
-      <h1 className='message__heading'>{props.heading}</h1>
+      <h1 className='message__heading'>{props.heading || 'Default Heading'}</h1>
       <span className='message__text'>{ children }</span>
     </div>
   )
@@ -81,7 +85,7 @@ As before, we've got some display logic to say we don't want to render an `<img>
 There are 3 prop translations happening in the example above:
 
 1. `imageUrl` becomes the `src` of the image
-1. `heading` becomes the `children` of the h1
+1. `heading` becomes the `children` of the h1 (with fallback to a default value)
 1. `children` becomes the `children` of the span
 
 We can declare that behaviour with `.props(...)`, and describe the nested structure with `.content(...)`:
@@ -123,6 +127,7 @@ Reading from the top:
 - a functional component `Heading`
   - renders an `<h1>` with classname `message__heading`
   - receives a `heading` prop which becomes the `children` of the `<h1>`
+  - note that `Heading` is a real ordinary react component, and we can do all of the usual things with it like setting `.defaultProps`.
 
 - a functional component `Text`
   - renders a `<span>` with classname `message__text`
@@ -131,3 +136,43 @@ Reading from the top:
 - a functional component `Message`
   - renders a `<div>` with classname `message`
   - contains a `Heading`, `Image` and `Text`, and automatically passes its props down to them.
+
+## Example: conditional behaviour
+
+Sometimes you want to add some logic. Like say you want your heading to be reversed when the `reverse` prop is set.
+
+We could write it like this:
+
+```js
+import React from 'react'
+
+export default function (props) {
+  const { children, reverse } = props
+  const heading = reverse
+    ? children.split('').reverse().join('')
+    : children
+
+  const className = reverse
+    ? 'heading heading--reversed'
+    : 'heading'
+
+  return (
+    <h1 className={className}>{heading}</h1>
+  )
+}
+```
+
+or like this:
+
+```js
+import x from 'drx'
+
+export default x.h1(
+  'heading',
+  p => p.reverse && 'heading--reversed'
+).props(
+  p => p.reverse ? {
+    children: p.children.split('').reverse().join('')
+  } : p
+)
+```
