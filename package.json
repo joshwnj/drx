@@ -1,0 +1,26 @@
+{
+  "name": "drx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshwnj/drx.git"
+  },
+  "keywords": [],
+  "author": "joshwnj",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joshwnj/drx/issues"
+  },
+  "homepage": "https://github.com/joshwnj/drx#readme",
+  "peerDependencies": {
+    "react": ">= 0.14.0 < 17.0.0-0"
+  },
+  "devDependencies": {
+    "react": "^15.6.1"
+  }
+}
