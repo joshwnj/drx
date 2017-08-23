@@ -176,3 +176,8 @@ export default x.h1(
   } : p
 )
 ```
+
+## Inspiration
+
+- [recompose](https://github.com/acdlite/recompose)
+- [styled-components](https://github.com/styled-components/styled-components)
