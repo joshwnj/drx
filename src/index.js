@@ -16,8 +16,11 @@ function x (type, ...styles) {
 
     const className = props.className || renderStyles(self.styles, props)
 
-    const children = getChildren(self.list, self.content, props)
- 
+    // don't look for children if we've already had some assigned by .props()
+    const children = selfProps && selfProps.children !== undefined
+      ? null
+      : getChildren(self.list, self.content, props)
+
     return createElement(
       type,
       Object.assign({ children, className }, selfProps)
@@ -61,7 +64,9 @@ function x (type, ...styles) {
           const val = p[func[k]]
           if (val !== undefined) {
             newProps[k] = val
-          } 
+          }
+          // children is a special case: we only want it to pass on if it's manually opted in
+          else if (k === 'children') { newProps[k] = '' }
         })
         return newProps
       }
