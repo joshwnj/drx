@@ -107,7 +107,7 @@ Heading.defaultProps = {
 }
 
 const Text = x.span('message__text')
-  .props({ children: 'children' })
+  .props('children')
 
 const Message = x.div('message')
   .content(
