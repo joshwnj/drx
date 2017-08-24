@@ -10,6 +10,10 @@ _Declarative React Experiments_
 npm install --save drx
 ```
 
+## Let's see the example right away pls
+
+[-> codepen](https://codepen.io/joshwnj/pen/zdLree?editors=0011#)
+
 ## Q. Is this ready to use in production?
 
 Nope! Things are most likely going to change.
