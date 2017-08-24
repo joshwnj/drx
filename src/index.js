@@ -27,10 +27,6 @@ function x (type, ...styles) {
       Object.assign({ children, className }, selfProps)
     )
 
-    if (self.defaultProps) {
-      elem.defaultProps = self.defaultProps
-    }
-
     return elem
   }
 
@@ -65,7 +61,9 @@ function x (type, ...styles) {
   }
 
   render.defaultProps = function (props) {
-    self.defaultProps = props
+    Object.keys(props).forEach(k => {
+      render.defaultProps[k] = props[k]
+    })
     return render
   }
 
