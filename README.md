@@ -179,6 +179,39 @@ export default x.h1(
 )
 ```
 
+## Example: dynamic css
+
+As seen in previous examples we can create elements with one or more classnames, and these can be dynamically selected based on props.
+
+We can also apply raw css, which will be converted into a dynamic class that is inserted into a `<style>` tag at runtime.
+
+```js
+import x from 'drx'
+
+const colors = {
+  white: 'hsl(0, 0%, 95%)',
+  black: 'hsl(0, 10%, 5%)'
+}
+
+const Button = x.button(
+  // as well as classnames, raw css works
+  'border: 2px solid black',
+  'padding: 1rem',
+
+  // template strings work as expected
+  `background: ${colors.white}`,
+
+  // functions can apply static or dynamic classnames based on props
+  p => p.dangerous ? [ 'color: red', 'font-weight: bold' ] : 'safe-button',
+
+  // pseudos and complex selectors are fine too
+  `&:hover {
+    background: ${colors.black};
+    color: ${colors.white};
+  }`
+)
+```
+
 ## Inspiration
 
 - [recompose](https://github.com/acdlite/recompose)
