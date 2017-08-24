@@ -37,7 +37,11 @@ function x (type, ...styles) {
 
   render.content = function (...args) {
     self.content = (props) => {
-      return args.map((a, key) => createElement(a, Object.assign({ key }, props)))
+      return args.map((a, key) => (
+        typeof a === 'object'
+          ? a
+          : createElement(a, Object.assign({ key }, props))
+      ))
     }
 
     return render

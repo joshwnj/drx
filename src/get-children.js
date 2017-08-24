@@ -6,8 +6,9 @@ module.exports = function getChildren (list, content, props) {
   }
 
   const { prop, type } = list
-  return props[prop].map((item, key) => createElement(
-    type,
-    Object.assign({ key }, item)
-  ))
+  return props[prop].map((item, key) => (
+    typeof item === 'object' ? item : createElement(
+      type,
+      Object.assign({ key }, item)
+  )))
 }
