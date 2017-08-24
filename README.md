@@ -2,6 +2,8 @@
 
 _Declarative React Experiments_
 
+[![Build Status](https://secure.travis-ci.org/joshwnj/drx.png)](http://travis-ci.org/joshwnj/drx)
+
 ## Install
 
 ```
@@ -69,7 +71,7 @@ import React from 'react'
 
 export default function (props) {
   const { children, imageUrl } = props
-  
+
   return (
     <div className='message'>
       { imageUrl && <img src={imageUrl} className='message__image /> }
