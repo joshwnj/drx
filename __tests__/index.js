@@ -1,4 +1,4 @@
-/* global test, expect, describe, it */
+/* global describe, it, expect */
 
 const x = require('../src')
 const renderer = require('react-test-renderer')
@@ -10,15 +10,21 @@ function render (type, props) {
   ).toJSON()
 }
 
-test('Div with class', () => {
-  const Component = x.div('some-class')
+describe('Classes', () => {
+  it('with no classes', () => {
+    const Component = x.div('some-class')
+    expect(render(Component)).toMatchSnapshot()
+  })
 
-  expect(render(Component)).toMatchSnapshot()
-})
+  it('with a single class', () => {
+    const Component = x.div('some-class')
+    expect(render(Component)).toMatchSnapshot()
+  })
 
-test('Div with multiple classes', () => {
-  const Component = x.div('some-class', 'another-class')
-  expect(render(Component)).toMatchSnapshot()
+  it('with multiple classes', () => {
+    const Component = x.div('some-class', 'another-class')
+    expect(render(Component)).toMatchSnapshot()
+  })
 })
 
 describe('Div with a conditional class', () => {
@@ -48,6 +54,43 @@ describe('Basic conditional rendering', () => {
   it('without the prop flag', () => {
     expect(
       render(Component, { children: 'hi' })
+    ).toMatchSnapshot()
+  })
+})
+
+describe('Conditional rendering by function', () => {
+  const Component = x.div()
+    .renderIf(p => p.a + p.b > 10)
+
+  it('with sum of props greater than 10', () => {
+    expect(
+      render(Component, { a: 9, b: 2, children: 'hi' })
+    ).toMatchSnapshot()
+  })
+
+  it('with sum of props less than 10', () => {
+    expect(
+      render(Component, { a: 1, b: 8, children: 'hi' })
+    ).toMatchSnapshot()
+  })
+})
+
+describe('Passing props', () => {
+  const Image = x.img()
+    .props('src', 'alt')
+
+  const Text = x.span()
+    .props('children')
+
+  const Component = x.div()
+    .content(
+      Text,
+      Image
+    )
+
+  it('passes props to child components', () => {
+    expect(
+      render(Component, { src: 'awyis.gif', alt: 'aw yis', children: 'a gif' })
     ).toMatchSnapshot()
   })
 })

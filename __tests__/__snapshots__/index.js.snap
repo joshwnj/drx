@@ -10,6 +10,34 @@ exports[`Basic conditional rendering with the prop flag 1`] = `
 
 exports[`Basic conditional rendering without the prop flag 1`] = `null`;
 
+exports[`Classes with a single class 1`] = `
+<div
+  className="some-class"
+/>
+`;
+
+exports[`Classes with multiple classes 1`] = `
+<div
+  className="some-class another-class"
+/>
+`;
+
+exports[`Classes with no classes 1`] = `
+<div
+  className="some-class"
+/>
+`;
+
+exports[`Conditional rendering by function with sum of props greater than 10 1`] = `
+<div
+  className=""
+>
+  hi
+</div>
+`;
+
+exports[`Conditional rendering by function with sum of props less than 10 1`] = `null`;
+
 exports[`Div with a conditional class gets a single extra class with the prop flag 1`] = `
 <div
   className="thing thing--big"
@@ -22,14 +50,21 @@ exports[`Div with a conditional class gets two extra classes without the prop fl
 />
 `;
 
-exports[`Div with class 1`] = `
+exports[`Passing props passes props to child components 1`] = `
 <div
-  className="some-class"
-/>
-`;
-
-exports[`Div with multiple classes 1`] = `
-<div
-  className="some-class another-class"
-/>
+  className=""
+>
+  <span
+    className=""
+  >
+    a gif
+  </span>
+  <img
+    alt="aw yis"
+    className=""
+    src="awyis.gif"
+  >
+    a gif
+  </img>
+</div>
 `;
