@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "standard src/**/*.js",
+    "lint": "standard",
     "test": "jest"
   },
   "repository": {

@@ -1,3 +1,5 @@
+/* global test, expect */
+
 const x = require('../src')
 const renderer = require('react-test-renderer')
 
