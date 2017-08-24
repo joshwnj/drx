@@ -7,7 +7,7 @@
     "prebuild": "rm -rf lib && mkdir lib",
     "build": "babel -d lib src",
     "lint": "standard",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "test": "jest"
   },
   "repository": {
