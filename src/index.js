@@ -22,10 +22,16 @@ function x (type, ...styles) {
       ? null
       : getChildren(self.list, self.content, props)
 
-    return createElement(
+    const elem = createElement(
       type,
       Object.assign({ children, className }, selfProps)
     )
+
+    if (self.defaultProps) {
+      elem.defaultProps = self.defaultProps
+    }
+
+    return elem
   }
 
   render.style = function (...styles) {
@@ -55,6 +61,11 @@ function x (type, ...styles) {
 
   render.props = function (...args) {
     self.props = createPropsFunc(...args)
+    return render
+  }
+
+  render.defaultProps = function (props) {
+    self.defaultProps = props
     return render
   }
 
