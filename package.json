@@ -7,7 +7,7 @@
     "prebuild": "rm -rf lib && mkdir lib",
     "build": "babel -d lib src",
     "lint": "standard",
-    "prepare": "npm run build",
+    "prepare": "npm run build && npm run umd",
     "umd": "npm run umd:prep && npm run umd:build && npm run umd:minify",
     "umd:prep": "rm -rf dist && mkdir dist",
     "umd:build": "browserify --standalone drx -o dist/drx.js lib/index.js",
@@ -40,5 +40,10 @@
   },
   "dependencies": {
     "cmz": "^3.5.1"
-  }
+  },
+  "files": [
+    "dist",
+    "lib",
+    "src"
+  ]
 }
