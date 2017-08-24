@@ -8,6 +8,10 @@
     "build": "babel -d lib src",
     "lint": "standard",
     "prepare": "npm run build",
+    "umd": "npm run umd:prep && npm run umd:build && npm run umd:minify",
+    "umd:prep": "rm -rf dist && mkdir dist",
+    "umd:build": "browserify --standalone drx -o dist/drx.js lib/index.js",
+    "umd:minify": "uglifyjs -o dist/drx.min.js dist/drx.js",
     "test": "jest"
   },
   "repository": {
@@ -27,10 +31,12 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
+    "browserify": "^14.4.0",
     "jest": "^20.0.4",
     "react": "^15.6.1",
     "react-test-renderer": "^15.6.1",
-    "standard": "^10.0.3"
+    "standard": "^10.0.3",
+    "uglifyjs": "^2.4.11"
   },
   "dependencies": {
     "cmz": "^3.5.1"
