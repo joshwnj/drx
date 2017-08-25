@@ -54,8 +54,6 @@ exports[`Passing props passes props to child components 1`] = `
   <img
     alt="aw yis"
     src="awyis.gif"
-  >
-    a gif
-  </img>
+  />
 </div>
 `;

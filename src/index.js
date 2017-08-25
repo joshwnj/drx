@@ -18,18 +18,19 @@ function x (type, ...styles) {
     const className = props.className || renderStyles(self.styles, props)
 
     // don't look for children if we've already had some assigned by .props()
-    const children = selfProps && selfProps.children !== undefined
+    const children = (selfProps && selfProps.children !== undefined
       ? null
-      : getChildren(self.list, self.content, props)
+      : getChildren(self.list, self.content, props)) || []
 
-    const baseProps = { children }
+    const baseProps = {}
 
     // only add classname if we have one (to avoid an empty attribute)
     if (className) { baseProps.className = className }
 
     const elem = createElement(
       type,
-      Object.assign(baseProps, selfProps)
+      Object.assign(baseProps, selfProps),
+      ...children
     )
 
     return elem
@@ -45,7 +46,7 @@ function x (type, ...styles) {
       return args.map((a, key) => (
         typeof a === 'object'
           ? a
-          : createElement(a, Object.assign({ key }, props))
+          : createElement(a, props)
       ))
     }
 

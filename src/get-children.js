@@ -2,7 +2,7 @@ const { createElement } = require('react')
 
 module.exports = function getChildren (list, content, props) {
   if (!list) {
-    return content ? content(props) : props.children
+    return content ? content(props) : null
   }
 
   const { prop, type } = list

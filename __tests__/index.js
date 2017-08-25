@@ -43,7 +43,9 @@ describe('Div with a conditional class', () => {
 })
 
 describe('Basic conditional rendering', () => {
-  const Component = x.div().renderIf('active')
+  const Component = x.div()
+    .renderIf('active')
+    .props('children')
 
   it('with the prop flag', () => {
     expect(
@@ -61,6 +63,7 @@ describe('Basic conditional rendering', () => {
 describe('Conditional rendering by function', () => {
   const Component = x.div()
     .renderIf(p => p.a + p.b > 10)
+    .props('children')
 
   it('with sum of props greater than 10', () => {
     expect(
