@@ -22,9 +22,14 @@ function x (type, ...styles) {
       ? null
       : getChildren(self.list, self.content, props)
 
+    const baseProps = { children }
+
+    // only add classname if we have one (to avoid an empty attribute)
+    if (className) { baseProps.className = className }
+
     const elem = createElement(
       type,
-      Object.assign({ children, className }, selfProps)
+      Object.assign(baseProps, selfProps)
     )
 
     return elem

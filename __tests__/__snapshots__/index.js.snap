@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Basic conditional rendering with the prop flag 1`] = `
-<div
-  className=""
->
+<div>
   hi
 </div>
 `;
@@ -29,9 +27,7 @@ exports[`Classes with no classes 1`] = `
 `;
 
 exports[`Conditional rendering by function with sum of props greater than 10 1`] = `
-<div
-  className=""
->
+<div>
   hi
 </div>
 `;
@@ -51,17 +47,12 @@ exports[`Div with a conditional class gets two extra classes without the prop fl
 `;
 
 exports[`Passing props passes props to child components 1`] = `
-<div
-  className=""
->
-  <span
-    className=""
-  >
+<div>
+  <span>
     a gif
   </span>
   <img
     alt="aw yis"
-    className=""
     src="awyis.gif"
   >
     a gif
