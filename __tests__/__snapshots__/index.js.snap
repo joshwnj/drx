@@ -41,3 +41,15 @@ exports[`Div with a conditional class gets two extra classes without the prop fl
   className="thing thing--small small"
 />
 `;
+
+exports[`Passing props passes props to child components 1`] = `
+<div>
+  <span>
+    a gif
+  </span>
+  <img
+    alt="aw yis"
+    src="awyis.gif"
+  />
+</div>
+`;

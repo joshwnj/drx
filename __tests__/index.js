@@ -77,3 +77,23 @@ describe('Conditional rendering by function', () => {
     ).toMatchSnapshot()
   })
 })
+
+describe('Passing props', () => {
+  const Image = x.img()
+    .select('src', 'alt')
+
+  const Text = x.span()
+    .select('children')
+
+  const Component = x.div()
+    .content(
+      Text,
+      Image
+    )
+
+  it('passes props to child components', () => {
+    expect(
+      render(Component, { src: 'awyis.gif', alt: 'aw yis', children: 'a gif' })
+    ).toMatchSnapshot()
+  })
+})
