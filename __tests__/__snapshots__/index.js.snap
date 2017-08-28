@@ -1,13 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Basic conditional rendering with the prop flag 1`] = `
-<div>
-  hi
-</div>
-`;
-
-exports[`Basic conditional rendering without the prop flag 1`] = `null`;
-
 exports[`Classes with a single class 1`] = `
 <div
   className="some-class"
@@ -20,19 +12,7 @@ exports[`Classes with multiple classes 1`] = `
 />
 `;
 
-exports[`Classes with no classes 1`] = `
-<div
-  className="some-class"
-/>
-`;
-
-exports[`Conditional rendering by function with sum of props greater than 10 1`] = `
-<div>
-  hi
-</div>
-`;
-
-exports[`Conditional rendering by function with sum of props less than 10 1`] = `null`;
+exports[`Classes with no classes 1`] = `<div />`;
 
 exports[`Div with a conditional class gets a single extra class with the prop flag 1`] = `
 <div
@@ -44,16 +24,4 @@ exports[`Div with a conditional class gets two extra classes without the prop fl
 <div
   className="thing thing--small small"
 />
-`;
-
-exports[`Passing props passes props to child components 1`] = `
-<div>
-  <span>
-    a gif
-  </span>
-  <img
-    alt="aw yis"
-    src="awyis.gif"
-  />
-</div>
 `;
