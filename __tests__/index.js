@@ -97,3 +97,29 @@ describe('Passing props', () => {
     ).toMatchSnapshot()
   })
 })
+
+
+describe('Renaming props', () => {
+  const Image = x.img()
+    .select(
+      x.rename('imageUrl', 'src'),
+      x.rename('caption', 'alt', val => `description: ${val}`)
+    )
+
+  const Text = x.span()
+    .select(
+      x.rename('caption', 'children')
+    )
+
+  const Component = x.div()
+    .content(
+      Text,
+      Image
+    )
+
+  it('when passing to child components', () => {
+    expect(
+      render(Component, { imageUrl: 'awyis.gif', caption: 'a gif' })
+    ).toMatchSnapshot()
+  })
+})

@@ -53,3 +53,15 @@ exports[`Passing props passes props to child components 1`] = `
   />
 </div>
 `;
+
+exports[`Renaming props when passing to child components 1`] = `
+<div>
+  <span>
+    a gif
+  </span>
+  <img
+    alt="description: a gif"
+    src="awyis.gif"
+  />
+</div>
+`;
