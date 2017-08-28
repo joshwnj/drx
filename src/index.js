@@ -36,7 +36,7 @@ function selectProps (keys, props, shouldRename = false) {
       case 'object':
         if (k.from && k.to) {
           newProps[k[target]] = (shouldRename && k.func)
-            ? k.func(props[k.from])
+            ? k.func(props[k.from], props)
             : props[k.from]
         }
         break

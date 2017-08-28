@@ -77,8 +77,14 @@ exports[`Renaming props when passing to child components 1`] = `
 </div>
 `;
 
-exports[`Transforming props when passing to child components 1`] = `
+exports[`Transforming props when passing to child components with flag set 1`] = `
 <span>
   SOME TEXT
+</span>
+`;
+
+exports[`Transforming props when passing to child components with no flag set 1`] = `
+<span>
+  Some text
 </span>
 `;

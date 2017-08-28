@@ -126,10 +126,16 @@ describe('Renaming props', () => {
 describe('Transforming props', () => {
   const Component = x.span()
     .select(
-      x.transform('children', val => val.toUpperCase())
+      x.transform('children', (val, props) => props.shout ? val.toUpperCase() : val)
     )
 
-  it('when passing to child components', () => {
+  it('when passing to child components with flag set', () => {
+    expect(
+      render(Component, { children: 'Some text', shout: true })
+    ).toMatchSnapshot()
+  })
+
+  it('when passing to child components with no flag set', () => {
     expect(
       render(Component, { children: 'Some text' })
     ).toMatchSnapshot()
