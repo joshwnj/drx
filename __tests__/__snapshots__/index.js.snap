@@ -42,6 +42,17 @@ exports[`Div with a conditional class gets two extra classes without the prop fl
 />
 `;
 
+exports[`Lists mapped to a child component 1`] = `
+<ul>
+  <li>
+    One: 1
+  </li>
+  <li>
+    Three: 3
+  </li>
+</ul>
+`;
+
 exports[`Passing props passes props to child components 1`] = `
 <div>
   <span>

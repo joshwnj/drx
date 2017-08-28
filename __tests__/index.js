@@ -136,3 +136,26 @@ describe('Transforming props', () => {
     ).toMatchSnapshot()
   })
 })
+
+describe('Lists', () => {
+  const Item = x(
+    p => createElement('li', {}, `${p.name}: ${p.number}`)
+  )
+    .renderIf('active')
+    .select('active', 'name', 'number')
+
+  const Component = x.ul()
+    .list('items', Item)
+
+  const items = [
+    { active: true, name: 'One', number: 1 },
+    { active: false, name: 'Two', number: 2 },
+    { active: true, name: 'Three', number: 3 }
+  ]
+
+  it('mapped to a child component', () => {
+    expect(
+      render(Component, { items })
+    ).toMatchSnapshot()
+  })
+})
