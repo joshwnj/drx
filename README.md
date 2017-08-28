@@ -55,6 +55,7 @@ Not a big deal, as it's often convenient for those 2 concerns to be nearby. But 
 import x from 'drx'
 
 const Message = x.div('message')
+  .select('children')
   .renderIf('children')
 
 export default Message
@@ -64,6 +65,7 @@ Here we have:
 
 - a functional component `Message`
 - it renders a `<div>` with a className of `message`
+- it receives a `children` prop from its parent
 - if the `children` prop is empty it will not render anything.
 
 ## Example: translating props
@@ -94,24 +96,28 @@ There are 3 prop translations happening in the example above:
 1. `heading` becomes the `children` of the h1 (with fallback to a default value)
 1. `children` becomes the `children` of the span
 
-We can declare that behaviour with `.props(...)`, and describe the nested structure with `.content(...)`:
+We can declare that behaviour with `.select(...)`, and describe the nested structure with `.content(...)`:
 
 ```js
-import x from 'drx'
+import x, { rename } from 'drx'
 
 const Image = x.img('message__image')
-  .props({ src: 'imageUrl' })
   .renderIf('imageUrl')
+  .select(
+    rename('imageUrl', 'src')
+  )
 
 const Heading = x.h1('message__heading')
-  .props({ children: 'heading' })
+  .select(
+    rename('heading', 'children')
+  )
 
 Heading.defaultProps = {
   heading: 'Default Heading'
 }
 
 const Text = x.span('message__text')
-  .props('children')
+  .select('children')
 
 const Message = x.div('message')
   .content(
@@ -171,48 +177,15 @@ export default function (props) {
 or like this:
 
 ```js
-import x from 'drx'
+import x, { transform } from 'drx'
 
 export default x.h1(
   'heading',
   p => p.reverse && 'heading--reversed'
-).props(
-  p => p.reverse ? {
-    children: p.children.split('').reverse().join('')
-  } : p
-)
-```
-
-## Example: dynamic css
-
-As seen in previous examples we can create elements with one or more classnames, and these can be dynamically selected based on props.
-
-We can also apply raw css, which will be converted into a dynamic class that is inserted into a `<style>` tag at runtime.
-
-```js
-import x from 'drx'
-
-const colors = {
-  white: 'hsl(0, 0%, 95%)',
-  black: 'hsl(0, 10%, 5%)'
-}
-
-const Button = x.button(
-  // as well as classnames, raw css works
-  'border: 2px solid black',
-  'padding: 1rem',
-
-  // template strings work as expected
-  `background: ${colors.white}`,
-
-  // functions can apply static or dynamic classnames based on props
-  p => p.dangerous ? [ 'color: red', 'font-weight: bold' ] : 'safe-button',
-
-  // pseudos and complex selectors are fine too
-  `&:hover {
-    background: ${colors.black};
-    color: ${colors.white};
-  }`
+).select(
+  transform('children', (val, props) => (
+    props.reverse ? val.split('').reverse().join('') : val
+  ))
 )
 ```
 
