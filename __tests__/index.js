@@ -123,3 +123,16 @@ describe('Renaming props', () => {
     ).toMatchSnapshot()
   })
 })
+
+describe('Transforming props', () => {
+  const Component = x.span()
+    .select(
+      x.transform('children', val => val.toUpperCase())
+    )
+
+  it('when passing to child components', () => {
+    expect(
+      render(Component, { children: 'Some text' })
+    ).toMatchSnapshot()
+  })
+})

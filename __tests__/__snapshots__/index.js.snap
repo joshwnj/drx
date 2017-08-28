@@ -65,3 +65,9 @@ exports[`Renaming props when passing to child components 1`] = `
   />
 </div>
 `;
+
+exports[`Transforming props when passing to child components 1`] = `
+<span>
+  SOME TEXT
+</span>
+`;
