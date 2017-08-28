@@ -36,7 +36,7 @@
     "react": "^15.6.1",
     "react-test-renderer": "^15.6.1",
     "standard": "^10.0.3",
-    "uglifyjs": "^2.4.11"
+    "uglify-js": "^3.0.28"
   },
   "files": [
     "dist",
