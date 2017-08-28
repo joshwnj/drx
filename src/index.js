@@ -93,11 +93,7 @@ function x (type, ...styles) {
   }
 
   const DrxComponent = class extends PureComponent {
-    constructor(props) {
-      super(props)
-    }
-
-    render() {
+    render () {
       const props = this.props
 
       if (!shouldRender(self.renderIf, props)) { return null }

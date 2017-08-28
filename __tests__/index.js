@@ -98,7 +98,6 @@ describe('Passing props', () => {
   })
 })
 
-
 describe('Renaming props', () => {
   const Image = x.img()
     .select(
