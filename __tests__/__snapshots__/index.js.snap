@@ -22,6 +22,14 @@ exports[`Classes with multiple classes 1`] = `
 
 exports[`Classes with no classes 1`] = `<div />`;
 
+exports[`Conditional rendering by function with sum of props greater than 10 1`] = `
+<div>
+  hi
+</div>
+`;
+
+exports[`Conditional rendering by function with sum of props less than 10 1`] = `null`;
+
 exports[`Div with a conditional class gets a single extra class with the prop flag 1`] = `
 <div
   className="thing thing--big"

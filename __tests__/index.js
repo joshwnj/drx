@@ -59,3 +59,21 @@ describe('Basic conditional rendering', () => {
     ).toMatchSnapshot()
   })
 })
+
+describe('Conditional rendering by function', () => {
+  const Component = x.div()
+    .renderIf(p => p.a + p.b > 10)
+    .select('children')
+
+  it('with sum of props greater than 10', () => {
+    expect(
+      render(Component, { a: 9, b: 2, children: 'hi' })
+    ).toMatchSnapshot()
+  })
+
+  it('with sum of props less than 10', () => {
+    expect(
+      render(Component, { a: 1, b: 8, children: 'hi' })
+    ).toMatchSnapshot()
+  })
+})
