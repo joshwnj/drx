@@ -1,5 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Basic conditional rendering with the prop flag 1`] = `
+<div>
+  hi
+</div>
+`;
+
+exports[`Basic conditional rendering without the prop flag 1`] = `null`;
+
 exports[`Classes with a single class 1`] = `
 <div
   className="some-class"

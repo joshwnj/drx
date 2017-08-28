@@ -41,3 +41,21 @@ describe('Div with a conditional class', () => {
     expect(render(Component)).toMatchSnapshot()
   })
 })
+
+describe('Basic conditional rendering', () => {
+  const Component = x.div()
+    .renderIf('active')
+    .select('children')
+
+  it('with the prop flag', () => {
+    expect(
+      render(Component, { active: true, children: 'hi' })
+    ).toMatchSnapshot()
+  })
+
+  it('without the prop flag', () => {
+    expect(
+      render(Component, { children: 'hi' })
+    ).toMatchSnapshot()
+  })
+})
