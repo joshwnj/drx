@@ -1,30 +1,21 @@
-const cmz = require('cmz')
+module.exports = function renderStyles (self, props) {
+  if (props.className) { return props.className }
 
-module.exports = function renderStyles (styles, props) {
-  const rules = []
+  const styles = self.styles
   const classes = []
 
-  function group (s) {
-    if (typeof s === 'string' && s.indexOf(':') > 0) {
-      rules.push(s)
-    } else {
-      classes.push(s)
-    }
-  }
-
   function groupAll (styles) {
-    if (!Array.isArray(styles)) { return group(styles) }
+    if (!Array.isArray(styles)) {
+      classes.push(styles)
+      return
+    }
 
     styles.forEach(s => {
-      (typeof s === 'function') ? groupAll(s(props)) : group(s)
+      (typeof s === 'function') ? groupAll(s(props)) : groupAll(s)
     })
   }
 
   groupAll(styles)
-
-  if (rules.length > 0) {
-    classes.push(cmz(rules))
-  }
 
   return classes.join(' ')
 }

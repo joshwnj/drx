@@ -38,9 +38,6 @@
     "standard": "^10.0.3",
     "uglifyjs": "^2.4.11"
   },
-  "dependencies": {
-    "cmz": "^3.5.1"
-  },
   "files": [
     "dist",
     "lib",
