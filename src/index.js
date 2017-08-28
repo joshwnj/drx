@@ -1,93 +1,150 @@
-const { createElement, DOM } = require('react')
+const { createElement, PureComponent, DOM } = require('react')
 const renderStyles = require('./render-styles')
-const getChildren = require('./get-children')
-const createPropsFunc = require('./create-props-func')
+
+function shouldRender (cond, props) {
+  if (!cond) { return true }
+
+  const t = typeof cond
+  switch (t) {
+    case 'string':
+      return Boolean(props[cond])
+
+    case 'function':
+      return cond(props)
+
+    default:
+      console.warn('Unknown renderIf type:', cond)
+  }
+}
+
+function selectProps (keys, props, shouldRename = false) {
+  if (!keys) { return {} }
+
+  const target = shouldRename ? 'to' : 'from'
+  const newProps = {}
+  keys.forEach(k => {
+    const t = typeof k
+
+    switch (t) {
+      case 'string':
+        if (!(k in props)) {
+          console.warn(k, 'not found in props')
+        }
+        newProps[k] = props[k]
+        break
+
+      case 'object':
+        if (k.from && k.to) {
+          newProps[k[target]] = k.func ? k.func(props[k.from]) : props[k.from]
+        }
+        break
+    }
+  })
+
+  return newProps
+}
+
+function renameProps (keys, props) {
+  return selectProps(keys, props, true)
+}
+
+function renderChildren ({ list, content }, props) {
+  if (list) {
+    const { key, type } = list
+    const tSelf = type.__x
+
+    return props[key].map((item, i) => {
+      const selectedProps = selectProps(tSelf.selected, item)
+      return createElement(type, Object.assign({ key: i }, selectedProps))
+    })
+  }
+
+  if (!content) { return null }
+
+  return content.map(ch => {
+    const chSelf = ch.__x
+    if (chSelf) {
+      const selectedProps = selectProps(chSelf.selected, props)
+
+      // select the list prop for the wrapper component,
+      // but not for the element
+      const list = chSelf.list
+      if (list) {
+        selectedProps[list.key] = props[list.key]
+      }
+
+      return createElement(ch, selectedProps)
+    }
+
+    if (typeof ch === 'function') {
+      return createElement(ch, props)
+    }
+
+    return ch
+  }).filter(Boolean)
+}
 
 function x (type, ...styles) {
   const self = {
+    type,
     styles
   }
 
-  function render (props = {}) {
-    if (self.renderIf) {
-      if (!self.renderIf(props)) { return null }
+  const DrxComponent = class extends PureComponent {
+    constructor(props) {
+      super(props)
     }
 
-    const selfProps = self.props ? self.props(props) : {}
+    render() {
+      const props = this.props
 
-    const className = props.className || renderStyles(self.styles, props)
+      if (!shouldRender(self.renderIf, props)) { return null }
 
-    // don't look for children if we've already had some assigned by .props()
-    const children = (selfProps && selfProps.children !== undefined
-      ? null
-      : getChildren(self.list, self.content, props)) || []
+      const children = renderChildren(self, props) || []
+      const renamedProps = renameProps(self.selected, props)
 
-    const baseProps = {}
+      const className = renderStyles(self, props)
+      if (className) { renamedProps.className = className }
 
-    // only add classname if we have one (to avoid an empty attribute)
-    if (className) { baseProps.className = className }
-
-    const elem = createElement(
-      type,
-      Object.assign(baseProps, selfProps),
-      ...children
-    )
-
-    return elem
-  }
-
-  render.style = function (...styles) {
-    self.styles = styles
-    return render
-  }
-
-  render.content = function (...args) {
-    self.content = (props) => {
-      return args.map((a, key) => (
-        typeof a === 'object'
-          ? a
-          : createElement(a, props)
-      ))
+      return createElement(type, renamedProps, ...children)
     }
-
-    return render
   }
 
-  render.renderIf = function (func) {
-    // if we get a string, consider it to be the key of a prop
-    if (typeof func === 'string') {
-      self.renderIf = (p) => Boolean(p[func])
-    } else {
-      // TODO: make sure it's a function at this point
-      self.renderIf = func
-    }
+  const c = DrxComponent
 
-    return render
+  // select which props should be passed in
+  c.select = function (...keys) {
+    self.selected = keys
+    return c
   }
 
-  render.props = function (...args) {
-    self.props = createPropsFunc(...args)
-    return render
+  // declare child components
+  c.content = function (...components) {
+    self.content = components
+    return c
   }
 
-  render.defaultProps = function (props) {
-    Object.keys(props).forEach(k => {
-      render.defaultProps[k] = props[k]
-    })
-    return render
+  // condition to decide whether to render the component based on parent props
+  c.renderIf = function (func) {
+    self.renderIf = func
+    return c
   }
 
-  render.list = function (prop, type) {
-    self.list = { prop, type }
-    return render
+  c.list = function (key, type) {
+    self.list = { key, type }
+    return c
   }
 
-  return render
+  c.__x = self
+  return c
 }
 
 const types = Object.keys(DOM)
 types.forEach(type => {
   x[type] = (...styles) => x(type, ...styles)
 })
+
+x.rename = (from, to, func) => ({ from, to, func })
+x.transform = (key, func) => ({ from: key, to: key, func })
 
 module.exports = x
