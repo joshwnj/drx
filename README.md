@@ -79,7 +79,7 @@ export default function (props) {
 
   return (
     <div className='message'>
-      { imageUrl && <img src={imageUrl} className='message__image /> }
+      { imageUrl && <img src={imageUrl} className='message__image' /> }
       <h1 className='message__heading'>{props.heading || 'Default Heading'}</h1>
       <span className='message__text'>{ children }</span>
     </div>
