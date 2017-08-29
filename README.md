@@ -55,7 +55,6 @@ Not a big deal, as it's often convenient for those 2 concerns to be nearby. But 
 import x from 'drx'
 
 const Message = x.div('message')
-  .select('children')
   .renderIf('children')
 
 export default Message

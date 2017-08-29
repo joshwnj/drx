@@ -57,6 +57,11 @@ function renderChildren ({ list, content }, props) {
 
     return props[key].map((item, i) => {
       const selectedProps = selectProps(tSelf.selected, item)
+
+      // Also pass any props to the child element that are needed for .renderIf
+      // These are selected for the component, but not for the element.
+      Object.assign(selectedProps, selectProps([tSelf.renderIf], item))
+
       return createElement(type, Object.assign({ key: i }, selectedProps))
     })
   }

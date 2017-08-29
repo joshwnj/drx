@@ -2,7 +2,8 @@
 
 const x = require('../src')
 const renderer = require('react-test-renderer')
-const { createElement } = require('react')
+const React = require('react')
+const { createElement } = React
 
 function render (type, props) {
   return renderer.create(
@@ -144,10 +145,10 @@ describe('Transforming props', () => {
 
 describe('Lists', () => {
   const Item = x(
-    p => createElement('li', {}, `${p.name}: ${p.number}`)
+    ({ name, number }) => createElement('li', {}, `${name}: ${number}`)
   )
     .renderIf('active')
-    .select('active', 'name', 'number')
+    .select('name', 'number')
 
   const Component = x.ul()
     .list('items', Item)
