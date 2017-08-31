@@ -76,7 +76,6 @@ function x (type, ...styles) {
 
   class DrxComponent extends PureComponent {
     render () {
-      console.log('RENDER', self)
       const propsWithDefaults = mergeDefaultProps(self, this.props)
       const attr = getAttr(self, propsWithDefaults)
 
