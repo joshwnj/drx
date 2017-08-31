@@ -42,17 +42,6 @@ exports[`Div with a conditional class gets two extra classes without the prop fl
 />
 `;
 
-exports[`Lists mapped to a child component 1`] = `
-<ul>
-  <li>
-    One: 1
-  </li>
-  <li>
-    Three: 3
-  </li>
-</ul>
-`;
-
 exports[`Passing props passes props to child components 1`] = `
 <div>
   <span>
@@ -75,16 +64,4 @@ exports[`Renaming props when passing to child components 1`] = `
     src="awyis.gif"
   />
 </div>
-`;
-
-exports[`Transforming props when passing to child components with flag set 1`] = `
-<span>
-  SOME TEXT
-</span>
-`;
-
-exports[`Transforming props when passing to child components with no flag set 1`] = `
-<span>
-  Some text
-</span>
 `;

@@ -79,6 +79,12 @@ function x (type, ...styles) {
       const propsWithDefaults = mergeDefaultProps(self, this.props)
       const attr = getAttr(self, propsWithDefaults)
 
+      Object.keys(attr).forEach(k => {
+        if (typeof attr[k] === 'undefined') {
+          console.warn('attr %s not found in props', k)
+        }
+      })
+
       if (!shouldRender(self, propsWithDefaults)) { return null }
 
       const className = renderStyles(self, propsWithDefaults)

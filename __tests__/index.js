@@ -46,7 +46,7 @@ describe('Div with a conditional class', () => {
 describe('Basic conditional rendering', () => {
   const Component = x.div()
     .renderIf('active')
-    .select('children')
+    .props(({ children }) => ({ children }))
 
   it('with the prop flag', () => {
     expect(
@@ -64,7 +64,7 @@ describe('Basic conditional rendering', () => {
 describe('Conditional rendering by function', () => {
   const Component = x.div()
     .renderIf(p => p.a + p.b > 10)
-    .select('children')
+    .props(({ children }) => ({ children }))
 
   it('with sum of props greater than 10', () => {
     expect(
@@ -81,10 +81,11 @@ describe('Conditional rendering by function', () => {
 
 describe('Passing props', () => {
   const Image = x.img()
-    .select('src', 'alt')
+    .props(({ src, alt }) => ({ src, alt }))
+    .attr(({ src, alt }) => ({ src, alt }))
 
   const Text = x.span()
-    .select('children')
+    .props(({ children }) => ({ children }))
 
   const Component = x.div()
     .content(
@@ -101,67 +102,21 @@ describe('Passing props', () => {
 
 describe('Renaming props', () => {
   const Image = x.img()
-    .select(
-      x.rename('imageUrl', 'src'),
-      x.rename('caption', 'alt', val => `description: ${val}`)
-    )
 
   const Text = x.span()
-    .select(
-      x.rename('caption', 'children')
-    )
+    .props(({ caption }) => ({ children: caption }))
 
   const Component = x.div()
     .content(
       Text,
       Image
+        .props(({ imageUrl, caption }) => ({ imageUrl, caption }))
+        .attr(({ imageUrl, caption }) => ({ src: imageUrl, alt: `description: ${caption}` }))
     )
 
   it('when passing to child components', () => {
     expect(
       render(Component, { imageUrl: 'awyis.gif', caption: 'a gif' })
-    ).toMatchSnapshot()
-  })
-})
-
-describe('Transforming props', () => {
-  const Component = x.span()
-    .select(
-      x.transform('children', (val, props) => props.shout ? val.toUpperCase() : val)
-    )
-
-  it('when passing to child components with flag set', () => {
-    expect(
-      render(Component, { children: 'Some text', shout: true })
-    ).toMatchSnapshot()
-  })
-
-  it('when passing to child components with no flag set', () => {
-    expect(
-      render(Component, { children: 'Some text' })
-    ).toMatchSnapshot()
-  })
-})
-
-describe('Lists', () => {
-  const Item = x(
-    ({ name, number }) => createElement('li', {}, `${name}: ${number}`)
-  )
-    .renderIf('active')
-    .select('name', 'number')
-
-  const Component = x.ul()
-    .list('items', Item)
-
-  const items = [
-    { active: true, name: 'One', number: 1 },
-    { active: false, name: 'Two', number: 2 },
-    { active: true, name: 'Three', number: 3 }
-  ]
-
-  it('mapped to a child component', () => {
-    expect(
-      render(Component, { items })
     ).toMatchSnapshot()
   })
 })
