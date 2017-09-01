@@ -111,7 +111,7 @@ function x (type, ...styles) {
       return c
     }
 
-    if (!self.props) { self.props = {} }
+    if (!self.props || typeof self.props === 'function') { self.props = {} }
     Object.assign(self.props, props)
     return c
   }
@@ -122,7 +122,7 @@ function x (type, ...styles) {
       return c
     }
 
-    if (!self.attr) { self.attr = {} }
+    if (!self.attr || typeof self.attr === 'function') { self.attr = {} }
     Object.assign(self.attr, props)
 
     return c
