@@ -1,168 +1,283 @@
-const { createElement, PureComponent, DOM } = require('react')
-const renderStyles = require('./render-styles')
+import { createElement, PureComponent, DOM } from 'react'
 
-function shouldRender (self, props) {
-  const cond = self.renderIf
-  if (!cond) { return true }
-
-  const t = typeof cond
-  switch (t) {
-    case 'string':
-      return Boolean(props[cond])
-
-    case 'function':
-      return cond(props)
-
-    default:
-      console.warn('Unknown renderIf type:', cond)
-  }
+function PropRef (component, key) {
+  this.component = component
+  this.def = component.__x
+  this.key = key
 }
 
-function getPropsFromSource (source, props) {
+function resolveProp (parent, ref) {
+  return parent.lastProps[ref.key]
+}
+
+function collectDependencies (content, parent, result = {}) {
+  // no content: terminate with result
+  if (!content) { return result }
+
+  function collectFromDef (def) {
+    Object.keys(def.props).forEach(k => {
+      const ref = def.props[k]
+
+      if (ref instanceof PropRef) {
+        if (ref.def === parent.def) {
+          result[ref.key] = ref
+        }
+        return
+      }
+
+      if (ref.__x_from) {
+        ref.__x_from.forEach(ref => {
+          if (ref instanceof PropRef) {
+            if (ref.def === parent.def) {
+              result[ref.key] = ref
+            }
+            return
+          }
+        })
+      }
+    })
+
+    // recurse
+    if (def.content) {
+      collectDependencies(def.content, parent, result)
+    }
+  }
+
+  content.forEach(ch => {
+    if (ch.__x) {
+      return collectFromDef(ch.__x)
+    }
+  })
+
+  return result
+}
+
+function getProps (parent, def, props) {
+  const source = def.props
+
+  // find all children of this component that have a dependency on this component's parent
+  // so we can make sure the props are passed down
+  const dependencies = collectDependencies(def.content, parent)
+  Object.keys(dependencies).forEach(k => {
+    source[k] = dependencies[k]
+  })
+
+  // TODO: complain if there are props that weren't declared
+
   // default: no props
   if (!source) { return {} }
 
-  return typeof source === 'function'
-    ? source(props) || {}
-    : source
-}
+  const newProps = {}
+  Object.keys(source).forEach(k => {
+    const ref = source[k]
 
-const getAttr = (self, props) => getPropsFromSource(self.attr, props)
-const getProps = (self, props) => getPropsFromSource(self.props, props)
+    // add 1 or more props to the signature,
+    // and possibly run them through a reducer:
+    if (ref.__x_from) {
+      const fromValues = {}
+      ref.__x_from.forEach(from => {
+        if (from instanceof PropRef) {
+          fromValues[from.key] = resolveProp(parent, from)
+          return
+        }
 
-function elem (Component, props) {
-  return createElement(Component, getProps(Component.__x, props))
-}
+        if (typeof from === 'function') {
+          newProps[k] = from(fromValues)
+          return
+        }
 
-function getChildren (self, props) {
-  if (!self.content) { return [ props.children ] }
+        console.warn('Unknown argument in x.from:', from)
+      })
 
-  const children = self.content.map(ch => {
-    if (ch.__x) { return elem(ch, props) }
-
-    if (typeof ch === 'function') {
-      const ch1 = ch(props)
-      if (!ch1) { return null }
-
-      return ch1.__x
-        ? elem(ch1, props)
-        : ch1
+      return
     }
 
-    // default: return the child as-is
-    return ch
+    if (ref instanceof PropRef) {
+      newProps[k] = resolveProp(parent, ref)
+      return
+    }
+
+    // special case: we only want to use `props.className` and `props.children` from parent when opted in
+    if (k === 'children' || k === 'className') {
+      newProps[k] = ref
+      return
+    }
+
+    const t = typeof ref
+    switch (t) {
+      case 'boolean':
+      case 'string':
+      case 'number':
+      case 'function':
+        newProps[k] = props[k] || ref
+        return
+
+      default:
+        console.warn('Unknown propref type:', k, def)
+        return
+    }
   })
 
-  if (children.length === 1 && Array.isArray(children[0])) {
-    return children[0]
-  } else {
-    return children || [ props.children ]
-  }
+  return newProps
 }
 
-function mergeDefaultProps (self, props) {
-  return self.defaultProps
-    ? Object.assign({}, self.defaultProps, props)
-    : props
-}
-
-function x (type, ...styles) {
-  const self = {
-    type,
-    styles,
-    props: null,
-    attr: null
+// declare a component by its props
+function x (props) {
+  // component class definition
+  const def = {
+    props
   }
 
   class DrxComponent extends PureComponent {
-    render () {
-      const propsWithDefaults = mergeDefaultProps(self, this.props)
-      const attr = getAttr(self, propsWithDefaults)
+    constructor (props) {
+      super(props)
+      this.def = def
+    }
 
-      Object.keys(attr).forEach(k => {
-        if (typeof attr[k] === 'undefined') {
-          console.warn('attr %s not found in props', k)
+    getChild (Component, props) {
+      const def = Component.__x
+      return def.elem
+        ? Component(getProps(this, def, props))
+        : createElement(Component, getProps(this, def, props))
+    }
+
+    getChildren (props) {
+      const { def } = this
+
+      // need to make sure we return an array so it can be spread
+      // (otherwise strings get split)
+      // TODO: consolidate this block with the return below
+      if (!def.content) {
+        return Array.isArray(props.children)
+          ? props.children
+          : [ props.children ]
+      }
+
+      const resolveChild = (ch) => {
+        if (!ch) { return null }
+
+        if (ch.__x) { return this.getChild(ch, props) }
+
+        if (typeof ch === 'function') {
+          return resolveChild(ch(props))
+        }
+
+        // default: return the child as-is
+        return ch
+      }
+
+      const children = def.content.map(resolveChild)
+
+      if (children.length === 1 && Array.isArray(children[0])) {
+        return children[0]
+      } else {
+        return children || [ props.children ]
+      }
+    }
+
+    mergeDefaultProps () {
+      const { def, props } = this
+      const newProps = Object.assign({}, props)
+
+      // look at the component definition to get defaults or dependencies
+      Object.keys(def.props).forEach(k => {
+        if (newProps[k] === undefined) {
+          newProps[k] = def.props[k]
         }
       })
 
-      if (!shouldRender(self, propsWithDefaults)) { return null }
+      // special case: className
+      if (newProps.className) {
+        // normalize to be an array
+        if (!Array.isArray(newProps.className)) {
+          newProps.className = [ newProps.className ]
+        }
 
-      const className = renderStyles(self, propsWithDefaults)
-      if (className) { attr.className = className }
+        // TODO: resolve prop dependencies
+        // ...
 
-      // children get original props, not translated props
-      const children = getChildren(self, Object.assign({ className }, propsWithDefaults)) || []
+        const join = (val) => Array.isArray(val) ? val.join(' ') : val
 
-      if (!self.type) {
-        return (children.length === 1)
-          ? children[0]
-         : createElement('div', { className }, ...children)
+        // resolve dynamic classnames
+        newProps.className = newProps.className.map(c => {
+          if (c.__x_from) {
+            return c.__x_from.reduce((acc, value) => {
+              if (value instanceof PropRef) {
+                acc[value.key] = newProps[value.key]
+                return acc
+              }
+
+              if (typeof value === 'function') {
+                return join(value(Object.assign({}, newProps, acc)))
+              }
+            }, {})
+          }
+
+          if (typeof c === 'function') {
+            return join(c(newProps))
+          }
+
+          return join(c)
+        })
+
+        // create a string
+        newProps.className = newProps.className.join(' ')
       }
 
-      return createElement(self.type || 'div', attr, ...children)
+      return newProps
+    }
+
+    render () {
+      const propsWithDefaults = this.mergeDefaultProps()
+
+      // render-tree stuff needs to go on the instance, not on the class
+      this.lastProps = Object.assign({}, propsWithDefaults)
+
+      // children get original props, not translated props
+      const children = this.getChildren(propsWithDefaults) || []
+
+      const { className } = propsWithDefaults
+
+      if (!def.type) {
+        return createElement('div', { className }, ...children)
+      }
+
+      return createElement(def.type, propsWithDefaults, ...children)
     }
   }
 
   const c = DrxComponent
 
-  c.props = (props) => {
-    if (typeof props === 'function') {
-      self.props = props
-      return c
-    }
+  c.__x = def
 
-    if (!self.props || typeof self.props === 'function') { self.props = {} }
-    Object.assign(self.props, props)
+  // expose the prop references
+  Object.keys(props).forEach(k => {
+    c[k] = new PropRef(c, k)
+  })
+
+  c.children = function (...ch) {
+    def.content = ch
     return c
   }
 
-  c.attr = (props) => {
-    if (typeof props === 'function') {
-      self.attr = props
-      return c
-    }
-
-    if (!self.attr || typeof self.attr === 'function') { self.attr = {} }
-    Object.assign(self.attr, props)
-
-    return c
-  }
-
-  c.defaultProps = (props) => {
-    self.defaultProps = props
-    return c
-  }
-
-  c.style = (...styles) => {
-    self.styles = self.styles.concat(styles)
-    return c
-  }
-
-  c.content = (...items) => {
-    self.content = items
-    return c
-  }
-
-  c.list = (func, Component) => {
-    return c.content((props) => (
-      func(props).map((item, key) => (
-        createElement(Component, Object.assign({ key }, item))
-      ))
-    ))
-  }
-
-  c.renderIf = (func) => {
-    self.renderIf = func
-    return c
-  }
-
-  c.__x = self
   return c
+}
+
+x.from = function (...refs) {
+  return { __x_from: refs }
 }
 
 const types = Object.keys(DOM)
 types.forEach(type => {
-  x[type] = (...styles) => x(type, ...styles)
+  x[type] = (def) => {
+    const func = createElement.bind(null, type)
+    func.__x = {
+      elem: true,
+      props: def
+    }
+
+    return func
+  }
 })
 
-module.exports = x
+export default x
