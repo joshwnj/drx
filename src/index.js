@@ -236,10 +236,10 @@ function x (props) {
       // children get original props, not translated props
       const children = this.getChildren(propsWithDefaults) || []
 
-      const { className } = propsWithDefaults
-
       if (!def.type) {
-        return createElement('div', { className }, ...children)
+        const { className } = propsWithDefaults
+        const props = className ? { className } : {}
+        return createElement('div', props, ...children)
       }
 
       return createElement(def.type, propsWithDefaults, ...children)
