@@ -122,12 +122,7 @@ function getProps (parent, def, props) {
 }
 
 // declare a component by its props
-function x (props) {
-  // component class definition
-  const def = {
-    props
-  }
-
+function create (def) {
   class DrxComponent extends PureComponent {
     constructor (props) {
       super(props)
@@ -136,8 +131,10 @@ function x (props) {
 
     getChild (Component, props) {
       const def = Component.__x
+
+      // children that are elements are created directly, with no wrapper
       return def.elem
-        ? Component(getProps(this, def, props))
+        ? createElement(def.type, getProps(this, def, props))
         : createElement(Component, getProps(this, def, props))
     }
 
@@ -251,7 +248,7 @@ function x (props) {
   c.__x = def
 
   // expose the prop references
-  Object.keys(props).forEach(k => {
+  Object.keys(def.props).forEach(k => {
     c[k] = new PropRef(c, k)
   })
 
@@ -263,21 +260,13 @@ function x (props) {
   return c
 }
 
-x.from = function (...refs) {
-  return { __x_from: refs }
-}
+const x = (props) => create({ props })
+
+x.from = (...refs) => ({  __x_from: refs })
 
 const types = Object.keys(DOM)
 types.forEach(type => {
-  x[type] = (def) => {
-    const func = createElement.bind(null, type)
-    func.__x = {
-      elem: true,
-      props: def
-    }
-
-    return func
-  }
+  x[type] = (props) => create({ type, props, elem: true })
 })
 
 export default x

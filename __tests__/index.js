@@ -32,3 +32,50 @@ describe('Classes', () => {
     expect(render(Component)).toMatchSnapshot()
   })
 })
+
+describe('Attributes', () => {
+  it('not rendered on a wrapper component', () => {
+    const Component = x({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+    expect(render(Component)).toMatchSnapshot()
+  })
+
+  it('rendered on an element', () => {
+    const Component = x.div({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+    expect(render(Component)).toMatchSnapshot()
+  })
+
+  it('rendered on an element with parent props', () => {
+    const Component = x.div({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+    expect(
+      render(Component, {
+        id: 'custom-id',
+        'data-name': 'Custom name'
+      })
+    ).toMatchSnapshot()
+  })
+
+  it('passed from wrapper component to element', () => {
+    const Component = x({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+
+    Component.children(
+      x.span({
+        id: Component.id,
+        'data-attr': 'Other custom attr'
+      })
+    )
+
+    expect(render(Component)).toMatchSnapshot()
+  })
+})

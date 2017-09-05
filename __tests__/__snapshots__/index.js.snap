@@ -1,5 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Attributes not rendered on a wrapper component 1`] = `<div />`;
+
+exports[`Attributes passed from wrapper component to element 1`] = `
+<div>
+  <span
+    data-attr="Other custom attr"
+    id="default-id"
+  />
+</div>
+`;
+
+exports[`Attributes rendered on an element 1`] = `
+<div
+  data-name="Default name"
+  id="default-id"
+/>
+`;
+
+exports[`Attributes rendered on an element with parent props 1`] = `
+<div
+  data-name="Custom name"
+  id="custom-id"
+/>
+`;
+
 exports[`Basic conditional rendering with the prop flag 1`] = `
 <div>
   hi
