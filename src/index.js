@@ -228,6 +228,24 @@ function create (def) {
         }
       })
 
+      // resolve x.from values
+      Object.keys(newProps).forEach(k => {
+        const from = newProps[k].__x_from
+        if (!from) { return }
+
+        newProps[k] = from.reduce((acc, value) => {
+          const ref = value.__x_ref
+          if (ref) {
+            acc[ref.key] = newProps[ref.key]
+            return acc
+          }
+
+          if (typeof value === 'function') {
+            return value(Object.assign({}, newProps, acc))
+          }
+        }, {})
+      })
+
       // special case: className
       if (newProps.className) {
         const join = (val) => Array.isArray(val) ? val.join(' ') : val
