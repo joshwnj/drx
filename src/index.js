@@ -5,16 +5,16 @@ function createPropRef (component, key) {
 
   // the prop ref is a setter function
   // with metadata about the prop & component class
-  const func = (...args) => {
+  const PropRef = (...args) => {
     // special case: children and className can have multiple values
-    def._values[key] = (key === 'children' || key === 'className')
+    def.props[key] = (key === 'children' || key === 'className')
       ? args
       : args[0]
 
     return component
   }
-  func.__x_ref = { key, def }
-  return func
+  PropRef.__x_ref = { key, def }
+  return PropRef
 }
 
 function resolveProp (parent, ref) {
@@ -56,11 +56,12 @@ function collectDependencies (content, parent, result = {}) {
     })
 
     // recurse
-    if (def._values.children) {
-      collectDependencies(def._values.children, parent, result)
+    if (def.props.children) {
+      collectDependencies(def.props.children, parent, result)
     }
   }
 
+  if (content && !Array.isArray(content)) { content = [ content ] }
   content.forEach(ch => {
     if (ch.__x) {
       return collectFromDef(ch.__x)
@@ -138,8 +139,6 @@ function resolveProps (parent, source, props) {
 
 // declare a component by its props
 function create (def) {
-  def._values = {}
-
   class DrxComponent extends PureComponent {
     constructor (props) {
       super(props)
@@ -151,7 +150,7 @@ function create (def) {
 
       // find all props dependencies from sub-children
       // so we can make sure the props are passed down
-      const dependencies = collectDependencies(def._values.children, this)
+      const dependencies = collectDependencies(def.props.children, this)
       const hasDependencies = Object.keys(dependencies).length > 0
 
       // select props for the child
@@ -184,7 +183,7 @@ function create (def) {
       // need to make sure we return an array so it can be spread
       // (otherwise strings get split)
       // TODO: consolidate this block with the return below
-      if (!def._values.children) {
+      if (!def.props.children) {
         return Array.isArray(props.children)
           ? props.children
           : [ props.children ]
@@ -204,7 +203,9 @@ function create (def) {
         return ch
       }
 
-      const children = def._values.children.map(resolveChild)
+      const children = Array.isArray(def.props.children)
+        ? def.props.children.map(resolveChild)
+        : [ resolveChild(def.props.children) ]
 
       if (children.length === 1 && Array.isArray(children[0])) {
         return children[0]
