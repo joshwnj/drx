@@ -71,6 +71,17 @@ function collectDependencies (content, parent, result = {}) {
     .filter(Boolean)
     .forEach(collectFromDef)
 
+
+  ensureArray(content)
+    .map(ch => ch.__x_list)
+    .filter(Boolean)
+    .forEach(list => {
+      const ref = list.ref.__x_ref
+      if (ref.def === parent.def) {
+        result[ref.key] = list.ref
+      }
+    })
+
   return result
 }
 
@@ -185,11 +196,6 @@ function create (def) {
     getChildren (props) {
       const { def } = this
 
-      // children have already been resolved
-      if (props.children && !def.changed.children) {
-        return ensureArray(props.children)
-      }
-
       const resolveChild = (ch) => {
         if (!ch) { return null }
 
@@ -206,6 +212,20 @@ function create (def) {
 
         // default: return the child as-is
         return ch
+      }
+
+
+      // children have already been resolved
+      if (props.children && !def.changed.children) {
+        const list = props.children.__x_list
+        if (list) {
+          const items = resolveProp(this, list.ref.__x_ref)
+          props.children = items.map((item, i) => (
+            this.getChild(list.component, Object.assign({ key: i }, item))
+          ))
+        }
+
+        return ensureArray(props.children)
       }
 
       const children = ensureArray(def.props.children).map(resolveChild)
@@ -332,6 +352,10 @@ function create (def) {
 const x = (props) => create({ props })
 
 x.from = (...refs) => ({  __x_from: refs })
+
+x.list = (ref, component) => ({
+  __x_list: { ref, component }
+})
 
 const types = Object.keys(DOM)
 types.forEach(type => {
