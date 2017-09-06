@@ -13,6 +13,9 @@ function createPropRef (component, key) {
       ? args
       : args[0]
 
+    // record which keys have been changed
+    def.changed[key] = true
+
     return component
   }
   PropRef.__x_ref = { key, def }
@@ -139,6 +142,8 @@ function resolveProps (parent, source, props) {
 
 // declare a component by its props
 function create (def) {
+  def.changed = {}
+
   class DrxComponent extends PureComponent {
     constructor (props) {
       super(props)
@@ -180,9 +185,8 @@ function create (def) {
     getChildren (props) {
       const { def } = this
 
-      // need to make sure we return an array so it can be spread
-      // (otherwise strings get split)
-      if (!def.props.children) {
+      // children have already been resolved
+      if (props.children && !def.changed.children) {
         return ensureArray(props.children)
       }
 
@@ -190,6 +194,10 @@ function create (def) {
         if (!ch) { return null }
 
         if (ch.__x) { return this.getChild(ch, props) }
+
+        if (ch.__x_ref) {
+          return resolveProp(this, ch.__x_ref)
+        }
 
         // recurse
         if (typeof ch === 'function') {
