@@ -273,7 +273,13 @@ function create (def) {
 
       if (!def.type) {
         const { className } = propsWithDefaults
-        const props = className ? { className } : {}
+        const props = {}
+        const keys = [ 'className', 'style' ]
+        keys.forEach(k => {
+          const v = propsWithDefaults[k]
+          if (v === undefined || v === null || v === '') { return }
+          props[k] = v
+        })
         return createElement('div', props, ...children)
       }
 
