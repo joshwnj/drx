@@ -1,5 +1,7 @@
 import { createElement, PureComponent, DOM } from 'react'
 
+const ensureArray = v => Array.isArray(v) ? v : [ v ]
+
 function createPropRef (component, key) {
   const def = component.__x
 
@@ -61,12 +63,10 @@ function collectDependencies (content, parent, result = {}) {
     }
   }
 
-  if (content && !Array.isArray(content)) { content = [ content ] }
-  content.forEach(ch => {
-    if (ch.__x) {
-      return collectFromDef(ch.__x)
-    }
-  })
+  ensureArray(content)
+    .map(ch => ch.__x)
+    .filter(Boolean)
+    .forEach(collectFromDef)
 
   return result
 }
@@ -182,11 +182,8 @@ function create (def) {
 
       // need to make sure we return an array so it can be spread
       // (otherwise strings get split)
-      // TODO: consolidate this block with the return below
       if (!def.props.children) {
-        return Array.isArray(props.children)
-          ? props.children
-          : [ props.children ]
+        return ensureArray(props.children)
       }
 
       const resolveChild = (ch) => {
@@ -203,9 +200,7 @@ function create (def) {
         return ch
       }
 
-      const children = Array.isArray(def.props.children)
-        ? def.props.children.map(resolveChild)
-        : [ resolveChild(def.props.children) ]
+      const children = ensureArray(def.props.children).map(resolveChild)
 
       if (children.length === 1 && Array.isArray(children[0])) {
         return children[0]
@@ -227,15 +222,10 @@ function create (def) {
 
       // special case: className
       if (newProps.className) {
-        // normalize to be an array
-        if (!Array.isArray(newProps.className)) {
-          newProps.className = [ newProps.className ]
-        }
-
         const join = (val) => Array.isArray(val) ? val.join(' ') : val
 
         // resolve dynamic classnames
-        newProps.className = newProps.className.map(c => {
+        newProps.className = ensureArray(newProps.className).map(c => {
           if (c.__x_from) {
             return c.__x_from.reduce((acc, value) => {
               const ref = value.__x_ref
