@@ -143,3 +143,51 @@ describe('Props', () => {
     expect(render(Outer)).toMatchSnapshot()
   })
 })
+
+describe('Reducing', () => {
+  it('a single prop with a transform function', () => {
+    const Root = x({
+      className: 'root',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image'
+    })
+
+    const Image = x.img({
+      src: x.from(Root.imageUrl, p => `http://example.com/${p.imageUrl}`),
+      alt: Root.caption
+    })
+
+    Root.children(Image)
+
+    expect(render(Root)).toMatchSnapshot()
+  })
+
+  it('multiple props with a transform function', () => {
+    const Root = x({
+      className: 'root',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image',
+      secure: false
+    })
+
+    const Wrapper = x({
+      className: 'wrapper'
+    })
+
+    const Image = x.img({
+      src: x.from(Root.imageUrl, Root.secure, p => (
+        `${p.secure ? 'https' : 'http'}://example.com/${p.imageUrl}`
+      )),
+      alt: Root.caption
+    })
+
+    Root.children(
+      Wrapper.children(
+        Image
+      )
+    )
+
+    expect(render(Root)).toMatchSnapshot()
+    expect(render(Root, { secure: true })).toMatchSnapshot()
+  })
+})
