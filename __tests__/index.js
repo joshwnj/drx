@@ -31,6 +31,17 @@ describe('Classes', () => {
     })
     expect(render(Component)).toMatchSnapshot()
   })
+
+  it('with conditional classes', () => {
+    const Component = x({
+      className: [
+        'base-class',
+        p => p.big ? 'big' : 'small'
+      ]
+    })
+    expect(render(Component)).toMatchSnapshot()
+    expect(render(Component, { big: true })).toMatchSnapshot()
+  })
 })
 
 describe('Attributes', () => {
@@ -77,5 +88,58 @@ describe('Attributes', () => {
     )
 
     expect(render(Component)).toMatchSnapshot()
+  })
+})
+
+describe('Props', () => {
+  it('selected from parent', () => {
+    const Outer = x({
+      className: 'outer',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image'
+    })
+
+    const Inner1 = x.img({
+      src: Outer.imageUrl,
+      alt: Outer.caption
+    })
+
+    const Inner2 = x.span({
+      children: Outer.caption
+    })
+
+    Outer.children(Inner1, Inner2)
+
+    expect(render(Outer)).toMatchSnapshot()
+  })
+
+  it('selected from grandparent', () => {
+    const Outer = x({
+      className: 'outer',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image'
+    })
+
+    const Outer2 = x({
+      className: 'outer-2'
+    })
+
+    const Inner1 = x.img({
+      src: Outer.imageUrl,
+      alt: Outer.caption
+    })
+
+    const Inner2 = x.span({
+      children: Outer.caption
+    })
+
+    Outer.children(
+      Outer2.children(
+        Inner1,
+        Inner2
+      )
+    )
+
+    expect(render(Outer)).toMatchSnapshot()
   })
 })

@@ -7,7 +7,11 @@ function PropRef (component, key) {
 }
 
 function resolveProp (parent, ref) {
-  return parent.lastProps[ref.key]
+  const { key } = ref
+  const last = parent.lastProps
+  const deps = last._dependencies || {}
+
+  return last[key] || deps[key]
 }
 
 function collectDependencies (content, parent, result = {}) {
@@ -52,18 +56,7 @@ function collectDependencies (content, parent, result = {}) {
   return result
 }
 
-function getProps (parent, def, props) {
-  const source = def.props
-
-  // find all children of this component that have a dependency on this component's parent
-  // so we can make sure the props are passed down
-  const dependencies = collectDependencies(def.content, parent)
-  Object.keys(dependencies).forEach(k => {
-    source[k] = dependencies[k]
-  })
-
-  // TODO: complain if there are props that weren't declared
-
+function resolveProps (parent, source, props) {
   // default: no props
   if (!source) { return {} }
 
@@ -132,10 +125,33 @@ function create (def) {
     getChild (Component, props) {
       const def = Component.__x
 
-      // children that are elements are created directly, with no wrapper
-      return def.elem
-        ? createElement(def.type, getProps(this, def, props))
-        : createElement(Component, getProps(this, def, props))
+      // find all props dependencies from sub-children
+      // so we can make sure the props are passed down
+      const dependencies = collectDependencies(def.content, this)
+      const hasDependencies = Object.keys(dependencies).length > 0
+
+      // select props for the child
+      const childProps = resolveProps(this, def.props, props)
+
+      if (hasDependencies) {
+        const resolvedDeps = resolveProps(this, dependencies, props)
+        Object.keys(resolvedDeps).forEach(k => {
+          if (k in childProps) {
+            childProps[k] = resolvedDeps[k]
+          }
+        })
+
+        childProps._dependencies = resolvedDeps
+      }
+
+      // if this is an element, with no prop dependencies,
+      // we can render the element directly rather than wrapping it
+      // in a DrxComponent
+      const needsWrapper = !def.elem || hasDependencies
+
+      return needsWrapper
+        ? createElement(Component, childProps)
+        : createElement(def.type, childProps)
     }
 
     getChildren (props) {
@@ -190,9 +206,6 @@ function create (def) {
           newProps.className = [ newProps.className ]
         }
 
-        // TODO: resolve prop dependencies
-        // ...
-
         const join = (val) => Array.isArray(val) ? val.join(' ') : val
 
         // resolve dynamic classnames
@@ -237,6 +250,11 @@ function create (def) {
         const { className } = propsWithDefaults
         const props = className ? { className } : {}
         return createElement('div', props, ...children)
+      }
+
+      // we don't want the `_dependencies` prop if it's an element
+      if (def.elem) {
+        delete propsWithDefaults._dependencies
       }
 
       return createElement(def.type, propsWithDefaults, ...children)
