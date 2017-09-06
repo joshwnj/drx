@@ -111,6 +111,11 @@ function resolveProps (parent, source, props) {
     }
   })
 
+  // delete undefined props
+  Object.keys(newProps).forEach(k => {
+    if (newProps[k] === undefined) { delete newProps[k] }
+  })
+
   return newProps
 }
 
