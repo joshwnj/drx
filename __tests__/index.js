@@ -191,3 +191,25 @@ describe('Reducing', () => {
     expect(render(Root, { secure: true })).toMatchSnapshot()
   })
 })
+
+describe('Conditional rendering', () => {
+  it('using a child-function', () => {
+    const Root = x({
+      className: 'root',
+      imageUrl: '',
+      caption: ''
+    })
+
+    const Image = x.img({
+      src: Root.imageUrl,
+      alt: Root.caption
+    })
+
+    Root.children(
+      p => p.imageUrl && Image
+    )
+
+    expect(render(Root)).toMatchSnapshot()
+    expect(render(Root, { imageUrl: 'the-image.jpg' })).toMatchSnapshot()
+  })
+})
