@@ -1,9 +1,20 @@
 import { createElement, PureComponent, DOM } from 'react'
 
-function PropRef (component, key) {
-  this.component = component
-  this.def = component.__x
-  this.key = key
+function createPropRef (component, key) {
+  const def = component.__x
+
+  // the prop ref is a setter function
+  // with metadata about the prop & component class
+  const func = (...args) => {
+    // special case: children and className can have multiple values
+    def._values[key] = (key === 'children' || key === 'className')
+      ? args
+      : args[0]
+
+    return component
+  }
+  func.__x_ref = { key, def }
+  return func
 }
 
 function resolveProp (parent, ref) {
@@ -20,20 +31,23 @@ function collectDependencies (content, parent, result = {}) {
 
   function collectFromDef (def) {
     Object.keys(def.props).forEach(k => {
-      const ref = def.props[k]
+      const p = def.props[k]
+      const ref = p.__x_ref
 
-      if (ref instanceof PropRef) {
+      if (ref) {
         if (ref.def === parent.def) {
-          result[ref.key] = ref
+          result[ref.key] = p
         }
         return
       }
 
-      if (ref.__x_from) {
-        ref.__x_from.forEach(ref => {
-          if (ref instanceof PropRef) {
+      const from = p.__x_from
+      if (from) {
+        from.forEach(p => {
+          const ref = p.__x_ref
+          if (ref) {
             if (ref.def === parent.def) {
-              result[ref.key] = ref
+              result[ref.key] = p
             }
             return
           }
@@ -42,8 +56,8 @@ function collectDependencies (content, parent, result = {}) {
     })
 
     // recurse
-    if (def.content) {
-      collectDependencies(def.content, parent, result)
+    if (def._values.children) {
+      collectDependencies(def._values.children, parent, result)
     }
   }
 
@@ -62,51 +76,54 @@ function resolveProps (parent, source, props) {
 
   const newProps = {}
   Object.keys(source).forEach(k => {
-    const ref = source[k]
+    const p = source[k]
 
     // add 1 or more props to the signature,
     // and possibly run them through a reducer:
-    if (ref.__x_from) {
+    const from = p.__x_from
+    if (from) {
       const fromValues = {}
-      ref.__x_from.forEach(from => {
-        if (from instanceof PropRef) {
-          fromValues[from.key] = resolveProp(parent, from)
+      from.forEach(f => {
+        const ref = f.__x_ref
+        if (ref) {
+          fromValues[ref.key] = resolveProp(parent, ref)
           return
         }
 
-        if (typeof from === 'function') {
-          newProps[k] = from(fromValues)
+        if (typeof f === 'function') {
+          newProps[k] = f(fromValues)
           return
         }
 
-        console.warn('Unknown argument in x.from:', from)
+        console.warn('Unknown argument in drx.from():', f)
       })
 
       return
     }
 
-    if (ref instanceof PropRef) {
+    const ref = p.__x_ref
+    if (ref) {
       newProps[k] = resolveProp(parent, ref)
       return
     }
 
     // special case: we only want to use `props.className` and `props.children` from parent when opted in
     if (k === 'children' || k === 'className') {
-      newProps[k] = ref
+      newProps[k] = p
       return
     }
 
-    const t = typeof ref
+    const t = typeof p
     switch (t) {
       case 'boolean':
       case 'string':
       case 'number':
       case 'function':
-        newProps[k] = props[k] || ref
+        newProps[k] = props[k] || p
         return
 
       default:
-        console.warn('Unknown propref type:', k, def)
+        console.warn('Unknown propref type:', k, p)
         return
     }
   })
@@ -121,6 +138,8 @@ function resolveProps (parent, source, props) {
 
 // declare a component by its props
 function create (def) {
+  def._values = {}
+
   class DrxComponent extends PureComponent {
     constructor (props) {
       super(props)
@@ -132,7 +151,7 @@ function create (def) {
 
       // find all props dependencies from sub-children
       // so we can make sure the props are passed down
-      const dependencies = collectDependencies(def.content, this)
+      const dependencies = collectDependencies(def._values.children, this)
       const hasDependencies = Object.keys(dependencies).length > 0
 
       // select props for the child
@@ -165,7 +184,7 @@ function create (def) {
       // need to make sure we return an array so it can be spread
       // (otherwise strings get split)
       // TODO: consolidate this block with the return below
-      if (!def.content) {
+      if (!def._values.children) {
         return Array.isArray(props.children)
           ? props.children
           : [ props.children ]
@@ -176,6 +195,7 @@ function create (def) {
 
         if (ch.__x) { return this.getChild(ch, props) }
 
+        // recurse
         if (typeof ch === 'function') {
           return resolveChild(ch(props))
         }
@@ -184,7 +204,7 @@ function create (def) {
         return ch
       }
 
-      const children = def.content.map(resolveChild)
+      const children = def._values.children.map(resolveChild)
 
       if (children.length === 1 && Array.isArray(children[0])) {
         return children[0]
@@ -217,8 +237,9 @@ function create (def) {
         newProps.className = newProps.className.map(c => {
           if (c.__x_from) {
             return c.__x_from.reduce((acc, value) => {
-              if (value instanceof PropRef) {
-                acc[value.key] = newProps[value.key]
+              const ref = value.__x_ref
+              if (ref) {
+                acc[ref.key] = newProps[ref.key]
                 return acc
               }
 
@@ -272,13 +293,15 @@ function create (def) {
 
   // expose the prop references
   Object.keys(def.props).forEach(k => {
-    c[k] = new PropRef(c, k)
+    c[k] = createPropRef(c, k)
   })
 
-  c.children = function (...ch) {
-    def.content = ch
-    return c
-  }
+  const keys = ['children', 'className']
+  keys.forEach(k => {
+    if (!c[k]) {
+      c[k] = createPropRef(c, k)
+    }
+  })
 
   return c
 }
