@@ -2,7 +2,7 @@
 
 import x from '../src'
 import renderer from 'react-test-renderer'
-import React, { createElement } from 'react'
+import { createElement } from 'react'
 
 function render (type, props) {
   return renderer.create(

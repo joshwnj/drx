@@ -54,7 +54,6 @@ function collectDependencies (content, parent, result = {}) {
             if (ref.def === parent.def) {
               result[ref.key] = p
             }
-            return
           }
         })
       }
@@ -70,7 +69,6 @@ function collectDependencies (content, parent, result = {}) {
     .map(ch => ch.__x)
     .filter(Boolean)
     .forEach(collectFromDef)
-
 
   ensureArray(content)
     .map(ch => ch.__x_list)
@@ -139,7 +137,6 @@ function resolveProps (parent, source, props) {
 
       default:
         console.warn('Unknown propref type:', k, p)
-        return
     }
   })
 
@@ -213,7 +210,6 @@ function create (def) {
         // default: return the child as-is
         return ch
       }
-
 
       // children have already been resolved
       if (props.children && !def.changed.children) {
@@ -310,7 +306,6 @@ function create (def) {
       const children = this.getChildren(propsWithDefaults) || []
 
       if (!def.type) {
-        const { className } = propsWithDefaults
         const props = {}
         const keys = [ 'className', 'style' ]
         keys.forEach(k => {
@@ -351,7 +346,7 @@ function create (def) {
 
 const x = (props) => create({ props })
 
-x.from = (...refs) => ({  __x_from: refs })
+x.from = (...refs) => ({ __x_from: refs })
 
 x.list = (ref, component) => ({
   __x_list: { ref, component }
