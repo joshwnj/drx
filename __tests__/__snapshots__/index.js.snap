@@ -1,16 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Basic conditional rendering with the prop flag 1`] = `
+exports[`Attributes not rendered on a wrapper component 1`] = `<div />`;
+
+exports[`Attributes passed from wrapper component to element 1`] = `
 <div>
-  hi
+  <span
+    data-attr="Other custom attr"
+    id="default-id"
+  />
 </div>
 `;
 
-exports[`Basic conditional rendering without the prop flag 1`] = `null`;
+exports[`Attributes rendered on an element 1`] = `
+<div
+  data-name="Default name"
+  id="default-id"
+/>
+`;
+
+exports[`Attributes rendered on an element with parent props 1`] = `
+<div
+  data-name="Custom name"
+  id="custom-id"
+/>
+`;
 
 exports[`Classes with a single class 1`] = `
 <div
   className="some-class"
+/>
+`;
+
+exports[`Classes with conditional classes 1`] = `
+<div
+  className="base-class small"
+/>
+`;
+
+exports[`Classes with conditional classes 2`] = `
+<div
+  className="base-class big"
 />
 `;
 
@@ -22,46 +51,91 @@ exports[`Classes with multiple classes 1`] = `
 
 exports[`Classes with no classes 1`] = `<div />`;
 
-exports[`Conditional rendering by function with sum of props greater than 10 1`] = `
-<div>
-  hi
-</div>
-`;
-
-exports[`Conditional rendering by function with sum of props less than 10 1`] = `null`;
-
-exports[`Div with a conditional class gets a single extra class with the prop flag 1`] = `
+exports[`Conditional rendering using a child-function 1`] = `
 <div
-  className="thing thing--big"
+  className="root"
 />
 `;
 
-exports[`Div with a conditional class gets two extra classes without the prop flag 1`] = `
+exports[`Conditional rendering using a child-function 2`] = `
 <div
-  className="thing thing--small small"
-/>
-`;
-
-exports[`Passing props passes props to child components 1`] = `
-<div>
-  <span>
-    a gif
-  </span>
+  className="root"
+>
   <img
-    alt="aw yis"
-    src="awyis.gif"
+    src="the-image.jpg"
   />
 </div>
 `;
 
-exports[`Renaming props when passing to child components 1`] = `
-<div>
-  <span>
-    a gif
-  </span>
+exports[`Props selected from grandparent 1`] = `
+<div
+  className="outer"
+>
+  <div
+    className="outer-2"
+  >
+    <img
+      alt="The Image"
+      src="the-image.jpg"
+    />
+    <span>
+      The Image
+    </span>
+  </div>
+</div>
+`;
+
+exports[`Props selected from parent 1`] = `
+<div
+  className="outer"
+>
   <img
-    alt="description: a gif"
-    src="awyis.gif"
+    alt="The Image"
+    src="the-image.jpg"
   />
+  <span>
+    The Image
+  </span>
+</div>
+`;
+
+exports[`Reducing a single prop with a transform function 1`] = `
+<div
+  className="root"
+>
+  <img
+    alt="The Image"
+    src="http://example.com/the-image.jpg"
+  />
+</div>
+`;
+
+exports[`Reducing multiple props with a transform function 1`] = `
+<div
+  className="root"
+>
+  <div
+    className="wrapper"
+  >
+    <img
+      alt="The Image"
+      src="http://example.com/the-image.jpg"
+    />
+  </div>
+</div>
+`;
+
+exports[`Reducing multiple props with a transform function 2`] = `
+<div
+  className="root"
+>
+  <div
+    className="wrapper"
+  >
+    <img
+      alt="The Image"
+      src="https://example.com/the-image.jpg"
+    />
+  </div>
 </div>
 `;

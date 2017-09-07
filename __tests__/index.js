@@ -1,9 +1,8 @@
 /* global describe, it, expect */
 
-const x = require('../src')
-const renderer = require('react-test-renderer')
-const React = require('react')
-const { createElement } = React
+import x from '../src'
+import renderer from 'react-test-renderer'
+import { createElement } from 'react'
 
 function render (type, props) {
   return renderer.create(
@@ -13,108 +12,204 @@ function render (type, props) {
 
 describe('Classes', () => {
   it('with no classes', () => {
-    const Component = x.div()
+    const Component = x({})
     expect(render(Component)).toMatchSnapshot()
   })
 
   it('with a single class', () => {
-    const Component = x.div('some-class')
+    const Component = x({
+      className: 'some-class'
+    })
     expect(render(Component)).toMatchSnapshot()
   })
 
   it('with multiple classes', () => {
-    const Component = x.div('some-class', 'another-class')
+    const Component = x({
+      className: [
+        'some-class', 'another-class'
+      ]
+    })
     expect(render(Component)).toMatchSnapshot()
   })
-})
 
-describe('Div with a conditional class', () => {
-  const Component = x.div(
-    'thing',
-    p => p.big ? 'thing--big' : [ 'thing--small', 'small' ]
-  )
-
-  it('gets a single extra class with the prop flag', () => {
+  it('with conditional classes', () => {
+    const Component = x({
+      className: [
+        'base-class',
+        p => p.big ? 'big' : 'small'
+      ]
+    })
+    expect(render(Component)).toMatchSnapshot()
     expect(render(Component, { big: true })).toMatchSnapshot()
   })
+})
 
-  it('gets two extra classes without the prop flag', () => {
+describe('Attributes', () => {
+  it('not rendered on a wrapper component', () => {
+    const Component = x({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+    expect(render(Component)).toMatchSnapshot()
+  })
+
+  it('rendered on an element', () => {
+    const Component = x.div({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+    expect(render(Component)).toMatchSnapshot()
+  })
+
+  it('rendered on an element with parent props', () => {
+    const Component = x.div({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+    expect(
+      render(Component, {
+        id: 'custom-id',
+        'data-name': 'Custom name'
+      })
+    ).toMatchSnapshot()
+  })
+
+  it('passed from wrapper component to element', () => {
+    const Component = x({
+      id: 'default-id',
+      'data-name': 'Default name'
+    })
+
+    Component.children(
+      x.span({
+        id: Component.id,
+        'data-attr': 'Other custom attr'
+      })
+    )
+
     expect(render(Component)).toMatchSnapshot()
   })
 })
 
-describe('Basic conditional rendering', () => {
-  const Component = x.div()
-    .renderIf('active')
+describe('Props', () => {
+  it('selected from parent', () => {
+    const Outer = x({
+      className: 'outer',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image'
+    })
 
-  it('with the prop flag', () => {
-    expect(
-      render(Component, { active: true, children: 'hi' })
-    ).toMatchSnapshot()
+    const Inner1 = x.img({
+      src: Outer.imageUrl,
+      alt: Outer.caption
+    })
+
+    const Inner2 = x.span({
+      children: Outer.caption
+    })
+
+    Outer.children(Inner1, Inner2)
+
+    expect(render(Outer)).toMatchSnapshot()
   })
 
-  it('without the prop flag', () => {
-    expect(
-      render(Component, { children: 'hi' })
-    ).toMatchSnapshot()
-  })
-})
+  it('selected from grandparent', () => {
+    const Outer = x({
+      className: 'outer',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image'
+    })
 
-describe('Conditional rendering by function', () => {
-  const Component = x.div()
-    .renderIf(p => p.a + p.b > 10)
+    const Outer2 = x({
+      className: 'outer-2'
+    })
 
-  it('with sum of props greater than 10', () => {
-    expect(
-      render(Component, { a: 9, b: 2, children: 'hi' })
-    ).toMatchSnapshot()
-  })
+    const Inner1 = x.img({
+      src: Outer.imageUrl,
+      alt: Outer.caption
+    })
 
-  it('with sum of props less than 10', () => {
-    expect(
-      render(Component, { a: 1, b: 8, children: 'hi' })
-    ).toMatchSnapshot()
-  })
-})
+    const Inner2 = x.span({
+      children: Outer.caption
+    })
 
-describe('Passing props', () => {
-  const Image = x.img()
-    .props(({ src, alt }) => ({ src, alt }))
-    .attr(({ src, alt }) => ({ src, alt }))
-
-  const Text = x.span()
-    .props(({ children }) => ({ children }))
-
-  const Component = x.div()
-    .content(
-      Text,
-      Image
+    Outer.children(
+      Outer2.children(
+        Inner1,
+        Inner2
+      )
     )
 
-  it('passes props to child components', () => {
-    expect(
-      render(Component, { src: 'awyis.gif', alt: 'aw yis', children: 'a gif' })
-    ).toMatchSnapshot()
+    expect(render(Outer)).toMatchSnapshot()
   })
 })
 
-describe('Renaming props', () => {
-  const Image = x.img()
+describe('Reducing', () => {
+  it('a single prop with a transform function', () => {
+    const Root = x({
+      className: 'root',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image'
+    })
 
-  const Text = x.span()
-    .props(({ caption }) => ({ children: caption }))
+    const Image = x.img({
+      src: x.from(Root.imageUrl, p => `http://example.com/${p.imageUrl}`),
+      alt: Root.caption
+    })
 
-  const Component = x.div()
-    .content(
-      Text,
-      Image
-        .props(({ imageUrl, caption }) => ({ imageUrl, caption }))
-        .attr(({ imageUrl, caption }) => ({ src: imageUrl, alt: `description: ${caption}` }))
+    Root.children(Image)
+
+    expect(render(Root)).toMatchSnapshot()
+  })
+
+  it('multiple props with a transform function', () => {
+    const Root = x({
+      className: 'root',
+      imageUrl: 'the-image.jpg',
+      caption: 'The Image',
+      secure: false
+    })
+
+    const Wrapper = x({
+      className: 'wrapper'
+    })
+
+    const Image = x.img({
+      src: x.from(Root.imageUrl, Root.secure, p => (
+        `${p.secure ? 'https' : 'http'}://example.com/${p.imageUrl}`
+      )),
+      alt: Root.caption
+    })
+
+    Root.children(
+      Wrapper.children(
+        Image
+      )
     )
 
-  it('when passing to child components', () => {
-    expect(
-      render(Component, { imageUrl: 'awyis.gif', caption: 'a gif' })
-    ).toMatchSnapshot()
+    expect(render(Root)).toMatchSnapshot()
+    expect(render(Root, { secure: true })).toMatchSnapshot()
+  })
+})
+
+describe('Conditional rendering', () => {
+  it('using a child-function', () => {
+    const Root = x({
+      className: 'root',
+      imageUrl: '',
+      caption: ''
+    })
+
+    const Image = x.img({
+      src: Root.imageUrl,
+      alt: Root.caption
+    })
+
+    Root.children(
+      p => p.imageUrl && Image
+    )
+
+    expect(render(Root)).toMatchSnapshot()
+    expect(render(Root, { imageUrl: 'the-image.jpg' })).toMatchSnapshot()
   })
 })

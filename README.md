@@ -22,72 +22,64 @@ Nope! Things are most likely going to change.
 
 I'm still figuring that out :D But I'm discovering a lot of useful patterns arising from this idea of writing components (structure & logic) declaratively.
 
+In short, the goal is to provide a way of creating components by describing the dependencies between their props.
+
 Take a look at the examples below if you're keen, and let me know what you think.
 
-## Example: conditional rendering
+## Getting started
 
-We often write components that involve some display logic. Like a message that should only be rendered if it has children:
-
-```jsx
-import React from 'react'
-
-export default function (props) {
-  if (!props.children) { return null }
-
-  return (
-    <div className='message'>
-      {props.children}
-    </div>
-  )
-}
-```
-
-This is simple and easy enough to read, but can become unwieldy as components get larger and more complex.
-
-We've also combined 2 concerns:
-
-- _how_ to render the component
-- _when_ to render the component
-
-Not a big deal, as it's often convenient for those 2 concerns to be nearby. But could we declare these traits of the component, rather than writing them longhand?
+Let's start with the simplest possible example:
 
 ```js
 import x from 'drx'
 
-const Message = x.div('message')
-  .renderIf('children')
-
-export default Message
+export default x({
+  className: 'message',
+  children: ''
+})
 ```
 
-Here we have:
+This is the rough equivalent of:
 
-- a functional component `Message`
-- it renders a `<div>` with a className of `message`
-- it receives a `children` prop from its parent
-- if the `children` prop is empty it will not render anything.
+```js
+import React, { PureComponent } from 'react'
 
-## Example: translating props
+export default class extends PureComponent {
+  render () {
+    const { children, className } = this.props
 
-Another common bit of display logic in components is translating props from a parent to a child. For example, this component receives an `imageUrl` prop which becomes the `src` of a child image element:
-
-```jsx
-import React from 'react'
-
-export default function (props) {
-  const { children, imageUrl } = props
-
-  return (
-    <div className='message'>
-      { imageUrl && <img src={imageUrl} className='message__image' /> }
-      <h1 className='message__heading'>{props.heading || 'Default Heading'}</h1>
-      <span className='message__text'>{ children }</span>
-    </div>
-  )
+    return (
+      <div className={className || 'message'}>
+        {children}
+      </div>
+    )
+  }
 }
 ```
 
-As before, we've got some display logic to say we don't want to render an `<img>` element if we don't have a src.
+So we saved a few lines by using `drx`. That won't always be the case, sometimes we'll end up with more lines than a traditional approach. But I hope we can get to the point of gaining much more value from those extra lines.
+
+## Example: translating props
+
+A common bit of display logic in components is translating props from a parent to a child. For example, this component receives an `imageUrl` prop which becomes the `src` of a child image element:
+
+```jsx
+import React, { PureComponent } from 'react'
+
+export default class extends PureComponent {
+  render () {
+    const { children, imageUrl } = this.props
+
+    return (
+      <div className='message'>
+        { imageUrl && <img src={imageUrl} className='message__image' /> }
+        <h1 className='message__heading'>{props.heading || 'Default Heading'}</h1>
+        <span className='message__text'>{ children }</span>
+      </div>
+    )
+  }
+}
+```
 
 There are 3 prop translations happening in the example above:
 
@@ -95,96 +87,91 @@ There are 3 prop translations happening in the example above:
 1. `heading` becomes the `children` of the h1 (with fallback to a default value)
 1. `children` becomes the `children` of the span
 
-We can declare that behaviour with `.select(...)`, and describe the nested structure with `.content(...)`:
+We've also got some display logic to say we don't want to render an `<img>` element if we don't have an `imageUrl`.
+
+To write the above with `drx` we'll get something like this:
 
 ```js
-import x, { rename } from 'drx'
+import x from 'drx'
 
-const Image = x.img('message__image')
-  .renderIf('imageUrl')
-  .select(
-    rename('imageUrl', 'src')
-  )
-
-const Heading = x.h1('message__heading')
-  .select(
-    rename('heading', 'children')
-  )
-
-Heading.defaultProps = {
+const Root = x({
+  className: 'message',
+  imageUrl: '',
+  children: '',
   heading: 'Default Heading'
-}
+})
 
-const Text = x.span('message__text')
-  .select('children')
+const Image = x.img({
+  className: 'message__image',
+  src: Root.imageUrl
+})
 
-const Message = x.div('message')
-  .content(
-    Heading,
-    Image,
-    Text
-  )
+const Heading = x.h1({
+  className: 'message__heading',
+  children: Root.heading
+})
 
-export default Message
+const Text = x.span({
+  className: 'message__text',
+  children: Root.children
+})
+
+Root.children(
+  Heading,
+  props => props.imageUrl && Image,
+  Text
+)
+
+export default Root
 ```
 
 Reading from the top:
 
-- a functional component `Image`
+- a component `Root`, with some default props
+
+- a component `Image`
   - renders an `<img>` with classname `message__image`
-  - receives an `imageUrl` prop which becomes the `src` attribute of the `<img>`
-  - if there is no `imageUrl` the `<img>` is not rendered at all
+  - maps the `Root.imageUrl` prop to the `src` attribute of the `<img>`
 
-- a functional component `Heading`
+- a component `Heading`
   - renders an `<h1>` with classname `message__heading`
-  - receives a `heading` prop which becomes the `children` of the `<h1>`
-  - note that `Heading` is a real ordinary react component, and we can do all of the usual things with it like setting `.defaultProps`.
+  - maps the `Root.heading` prop to the heading's `children`. If no `heading` prop is provided to `Root`, we'll get the default heading value from `Root`'s definition.
 
-- a functional component `Text`
+- a component `Text`
   - renders a `<span>` with classname `message__text`
-  - adopts the `children` of the parent component as its own `children`
+  - adopts the `children` of the `Root` component as its own `children`
 
-- a functional component `Message`
-  - renders a `<div>` with classname `message`
-  - contains a `Heading`, `Image` and `Text`, and automatically passes its props down to them.
+- finally we tell `Root` to render with `Heading`, `Image` and `Text` as its children
+  - `Image` will only be rendered if we have a truthy `imageUrl` prop
 
-## Example: conditional behaviour
+## Example: reducing props
 
-Sometimes you want to add some logic. Like say you want your heading to be reversed when the `reverse` prop is set.
+Sometimes a child's prop is a function of 1 or more parent props. We can declare this with `x.from`. It both defines the dependency (ensuring that the props are passed down) and calls the function to transform or reduce the original values.
 
-We could write it like this:
-
-```jsx
-import React from 'react'
-
-export default function (props) {
-  const { children, reverse } = props
-  const heading = reverse
-    ? children.split('').reverse().join('')
-    : children
-
-  const className = reverse
-    ? 'heading heading--reversed'
-    : 'heading'
-
-  return (
-    <h1 className={className}>{heading}</h1>
-  )
-}
 ```
+import x from 'drx'
 
-or like this:
+const Root = x({
+  caption: '',
+  imageUrl: '',
+  secure: false
+})
 
-```js
-import x, { transform } from 'drx'
+const Text = x.div({
+  children: x.from(Root.caption, p => p.caption.toUpperCase())
+})
 
-export default x.h1(
-  'heading',
-  p => p.reverse && 'heading--reversed'
-).select(
-  transform('children', (val, props) => (
-    props.reverse ? val.split('').reverse().join('') : val
-  ))
+const Image = x.img({
+  alt: Root.caption,
+  src: x.from(
+    Root.imageUrl, Root.secure,
+    p => `${p.secure ? 'https' : 'http'}://example.com/${p.imageUrl}`
+  )
+})
+
+export default Root.children(
+  Image,
+  Text
 )
 ```
 
