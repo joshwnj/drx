@@ -67,6 +67,30 @@ exports[`Conditional rendering using a child-function 2`] = `
 </div>
 `;
 
+exports[`Default values with changed defaults 1`] = `
+<div
+  data-text="default text 2"
+/>
+`;
+
+exports[`Default values with changed defaults 2`] = `
+<div
+  data-text="custom text"
+/>
+`;
+
+exports[`Default values with wrapper component 1`] = `
+<div>
+  default text
+</div>
+`;
+
+exports[`Default values with wrapper component 2`] = `
+<div>
+  custom text
+</div>
+`;
+
 exports[`Props selected from grandparent 1`] = `
 <div
   className="outer"
