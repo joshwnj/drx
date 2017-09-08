@@ -189,12 +189,6 @@ function create (def) {
         childProps._dependencies = resolvedDeps
       }
 
-      const list = (childProps.children && childProps.children.__x_list)
-      if (list) {
-        const items = resolveProp(this, list.ref.__x_ref)
-        childProps.children = items.map((item, i) => (
-          this.getChild(list.component, Object.assign({ key: i }, item))
-        ))
       if (childProps.children) {
         childProps.children = ensureArray(childProps.children).reduce((acc, child) => {
           const list = child.__x_list
