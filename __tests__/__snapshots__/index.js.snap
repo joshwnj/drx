@@ -91,6 +91,31 @@ exports[`Default values with wrapper component 2`] = `
 </div>
 `;
 
+exports[`Lists simple example 1`] = `
+<div
+  className="root"
+>
+  <div
+    className="item"
+  >
+    <img
+      alt="Image One"
+      className="image"
+      src="image1.jpg"
+    />
+  </div>
+  <div
+    className="item"
+  >
+    <img
+      alt="Image Two"
+      className="image"
+      src="image2.jpg"
+    />
+  </div>
+</div>
+`;
+
 exports[`Props selected from grandparent 1`] = `
 <div
   className="outer"

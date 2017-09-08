@@ -195,6 +195,20 @@ function create (def) {
         childProps.children = items.map((item, i) => (
           this.getChild(list.component, Object.assign({ key: i }, item))
         ))
+      if (childProps.children) {
+        childProps.children = childProps.children.reduce((acc, child) => {
+          const list = child.__x_list
+          if (!list) {
+            acc.push(child)
+            return acc
+          }
+
+          const items = resolveProp(this, list.ref.__x_ref)
+
+          return acc.concat(items.map((item, i) => (
+            this.getChild(list.component, Object.assign({ key: i }, item))
+          )))
+        }, [])
       }
 
       // if this is an element, with no prop dependencies,
@@ -217,6 +231,15 @@ function create (def) {
 
         if (ch.__x_ref) {
           return resolveProp(this, ch.__x_ref)
+        }
+
+        const list = ch.__x_list
+        if (list) {
+          const items = resolveProp(this, list.ref.__x_ref)
+
+          return items.map((item, i) => (
+            this.getChild(list.component, Object.assign({ key: i }, item))
+          ))
         }
 
         // recurse

@@ -235,3 +235,43 @@ describe('Default values', () => {
     expect(render(Root, { 'data-text': 'custom text' })).toMatchSnapshot()
   })
 })
+
+describe('Lists', () => {
+  it('simple example', () => {
+    const Root = x({
+      className: 'root',
+      items: []
+    })
+
+    const Item = x({
+      className: 'item',
+      imageUrl: '',
+      caption: ''
+    })
+
+    Item.children(
+      x.img({
+        className: 'image',
+        src: Item.imageUrl,
+        alt: Item.caption
+      })
+    )
+
+    Root.children(
+      x.list(Root.items, Item)
+    )
+
+    const items = [
+      {
+        imageUrl: 'image1.jpg',
+        caption: 'Image One'
+      },
+      {
+        imageUrl: 'image2.jpg',
+        caption: 'Image Two'
+      }
+    ]
+
+    expect(render(Root, { items })).toMatchSnapshot()
+  })
+})
