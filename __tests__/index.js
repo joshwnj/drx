@@ -213,3 +213,25 @@ describe('Conditional rendering', () => {
     expect(render(Root, { imageUrl: 'the-image.jpg' })).toMatchSnapshot()
   })
 })
+
+describe('Default values', () => {
+  it('with wrapper component', () => {
+    const Root = x({
+      children: 'default text'
+    })
+
+    expect(render(Root)).toMatchSnapshot()
+    expect(render(Root, { children: 'custom text' })).toMatchSnapshot()
+  })
+
+  it('with changed defaults', () => {
+    const Root = x.div({
+      'data-text': 'default text'
+    })
+
+    Root['data-text']('default text 2')
+
+    expect(render(Root)).toMatchSnapshot()
+    expect(render(Root, { 'data-text': 'custom text' })).toMatchSnapshot()
+  })
+})

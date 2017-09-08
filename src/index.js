@@ -35,10 +35,11 @@ function collectDependencies (content, parent, result = {}) {
   if (!content) { return result }
 
   function collectFromDef (def) {
-    Object.keys(def.props).forEach(k => {
-      const p = def.props[k]
-      const ref = p.__x_ref
+    const propDef = def.props
+    Object.keys(propDef).forEach(k => {
+      const p = propDef[k]
 
+      const ref = p.__x_ref
       if (ref) {
         if (ref.def === parent.def) {
           result[ref.key] = p
@@ -60,8 +61,8 @@ function collectDependencies (content, parent, result = {}) {
     })
 
     // recurse
-    if (def.props.children) {
-      collectDependencies(def.props.children, parent, result)
+    if (propDef.children) {
+      collectDependencies(propDef.children, parent, result)
     }
   }
 
@@ -104,7 +105,7 @@ function resolveProps (parent, source, props) {
         }
 
         if (typeof f === 'function') {
-          newProps[k] = f(fromValues)
+          newProps[k] = f(Object.assign({}, props, fromValues))
           return
         }
 
@@ -150,24 +151,32 @@ function resolveProps (parent, source, props) {
 
 // declare a component by its props
 function create (def) {
+  const propDef = def.props
   def.changed = {}
 
   class DrxComponent extends PureComponent {
     constructor (props) {
       super(props)
       this.def = def
+      this.propDef = propDef
     }
 
     getChild (Component, props) {
       const def = Component.__x
+      if (!def) {
+        console.error('Not a valid DrxComponent', Component)
+        return null
+      }
+
+      const propDef = def.props
 
       // find all props dependencies from sub-children
       // so we can make sure the props are passed down
-      const dependencies = collectDependencies(def.props.children, this)
+      const dependencies = collectDependencies(propDef.children, this)
       const hasDependencies = Object.keys(dependencies).length > 0
 
       // select props for the child
-      const childProps = resolveProps(this, def.props, props)
+      const childProps = resolveProps(this, propDef, props)
 
       if (hasDependencies) {
         const resolvedDeps = resolveProps(this, dependencies, props)
@@ -178,6 +187,14 @@ function create (def) {
         })
 
         childProps._dependencies = resolvedDeps
+      }
+
+      const list = childProps.children.__x_list
+      if (list) {
+        const items = resolveProp(this, list.ref.__x_ref)
+        childProps.children = items.map((item, i) => (
+          this.getChild(list.component, Object.assign({ key: i }, item))
+        ))
       }
 
       // if this is an element, with no prop dependencies,
@@ -213,18 +230,12 @@ function create (def) {
 
       // children have already been resolved
       if (props.children && !def.changed.children) {
-        const list = props.children.__x_list
-        if (list) {
-          const items = resolveProp(this, list.ref.__x_ref)
-          props.children = items.map((item, i) => (
-            this.getChild(list.component, Object.assign({ key: i }, item))
-          ))
-        }
+        // TODO: handle __x_from
 
         return ensureArray(props.children)
       }
 
-      const children = ensureArray(def.props.children).map(resolveChild)
+      const children = ensureArray(propDef.children).map(resolveChild)
 
       if (children.length === 1 && Array.isArray(children[0])) {
         return children[0]
@@ -234,32 +245,36 @@ function create (def) {
     }
 
     mergeDefaultProps () {
-      const { def, props } = this
+      const { props, propDef } = this
+
       const newProps = Object.assign({}, props)
 
       // look at the component definition to get defaults or dependencies
-      Object.keys(def.props).forEach(k => {
+      Object.keys(propDef).forEach(k => {
         if (newProps[k] === undefined) {
-          newProps[k] = def.props[k]
+          newProps[k] = propDef[k]
         }
       })
 
+      const propReducer = (acc, value) => {
+        const ref = value.__x_ref
+        if (ref) {
+          acc[ref.key] = newProps[ref.key]
+          return acc
+        }
+
+        if (typeof value === 'function') {
+          return value(Object.assign({}, newProps, acc))
+        }
+      }
+
       // resolve x.from values
       Object.keys(newProps).forEach(k => {
-        const from = newProps[k].__x_from
-        if (!from) { return }
+        const value = newProps[k]
+        const info = value.__x_from
+        if (!info) { return }
 
-        newProps[k] = from.reduce((acc, value) => {
-          const ref = value.__x_ref
-          if (ref) {
-            acc[ref.key] = newProps[ref.key]
-            return acc
-          }
-
-          if (typeof value === 'function') {
-            return value(Object.assign({}, newProps, acc))
-          }
-        }, {})
+        newProps[k] = info.reduce(propReducer, {})
       })
 
       // special case: className
@@ -268,18 +283,9 @@ function create (def) {
 
         // resolve dynamic classnames
         newProps.className = ensureArray(newProps.className).map(c => {
-          if (c.__x_from) {
-            return c.__x_from.reduce((acc, value) => {
-              const ref = value.__x_ref
-              if (ref) {
-                acc[ref.key] = newProps[ref.key]
-                return acc
-              }
-
-              if (typeof value === 'function') {
-                return join(value(Object.assign({}, newProps, acc)))
-              }
-            }, {})
+          const info = c.__x_from
+          if (info) {
+            return join(info.reduce(propReducer, {}))
           }
 
           if (typeof c === 'function') {
