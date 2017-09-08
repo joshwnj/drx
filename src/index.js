@@ -196,7 +196,7 @@ function create (def) {
           this.getChild(list.component, Object.assign({ key: i }, item))
         ))
       if (childProps.children) {
-        childProps.children = childProps.children.reduce((acc, child) => {
+        childProps.children = ensureArray(childProps.children).reduce((acc, child) => {
           const list = child.__x_list
           if (!list) {
             acc.push(child)
