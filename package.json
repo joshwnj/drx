@@ -1,6 +1,6 @@
 {
   "name": "drx",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "prepublishOnly": "npm run build && npm run umd",
     "umd": "npm run umd:prep && npm run umd:build && npm run umd:minify",
     "umd:prep": "rm -rf dist && mkdir dist",
-    "umd:build": "browserify --standalone drx -o dist/drx.js lib/index.js",
+    "umd:build": "browserify --u react -t browserify-shim --standalone drx -o dist/drx.js lib/index.js",
     "umd:minify": "uglifyjs -o dist/drx.min.js dist/drx.js",
     "test": "jest"
   },
@@ -32,11 +32,15 @@
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "browserify": "^14.4.0",
+    "browserify-shim": "^3.8.14",
     "jest": "^20.0.4",
     "react": "^15.6.1",
     "react-test-renderer": "^15.6.1",
     "standard": "^10.0.3",
     "uglify-js": "^3.0.28"
+  },
+  "browserify-shim": {
+    "react": "global:React"
   },
   "files": [
     "dist",
